@@ -69,7 +69,9 @@ async def handle_incoming_call(request: Request):
     )
     response.pause(length=1)
     response.say(
-        "You can now ask me any question about your studies. How can I help you learn today?",
+        "You can now ask me any question about your studies. "
+        "Press the star or hash key at any time to end the call. "
+        "How can I help you learn today?",
         voice="Google.en-US-Chirp3-HD-Aoede"
     )
     
@@ -96,7 +98,7 @@ async def handle_media_stream(websocket: WebSocket):
     async with websockets.connect(
         azure_ws_url,
         additional_headers={
-            "api-key": settings.AZURE_OPENAI_API_KEY
+            "Authorization": f"Bearer {settings.AZURE_OPENAI_API_KEY}"
         }
     ) as openai_ws:
         await initialize_session(openai_ws)
@@ -111,7 +113,7 @@ async def handle_media_stream(websocket: WebSocket):
         
         async def receive_from_twilio():
             """Receive audio data from Twilio and send it to Azure OpenAI."""
-            nonlocal stream_sid, latest_media_timestamp
+            nonlocal stream_sid, latest_media_timestamp, call_should_end
             try:
                 async for message in websocket.iter_text():
                     data = json.loads(message)
@@ -130,6 +132,18 @@ async def handle_media_stream(websocket: WebSocket):
                         response_start_timestamp_twilio = None
                         latest_media_timestamp = 0
                         last_assistant_item = None
+                    
+                    elif data['event'] == 'dtmf':
+                        # User pressed a key on their phone keypad
+                        digit = data.get('dtmf', {}).get('digit', '') or data.get('digit', '')
+                        print(f"🔢 DTMF received: {digit}")
+                        print(f"🔍 Full DTMF data: {data}")
+                        if digit == '*' or digit == '#' or digit == '1':
+                            print(f"📞 User pressed {digit} to end call")
+                            call_should_end = True
+                            # Close immediately
+                            await websocket.close()
+                            return
                         
                     elif data['event'] == 'mark':
                         if mark_queue:
@@ -149,29 +163,47 @@ async def handle_media_stream(websocket: WebSocket):
                     
                     if response['type'] in LOG_EVENT_TYPES:
                         print(f"🤖 AI Event: {response['type']}")
-
-                    # Check for call end request in transcript
-                    if response.get('type') == 'response.done':
-                        # Check if AI response contains the end call signal
-                        if 'output' in response.get('response', {}):
-                            for output in response['response']['output']:
-                                if output.get('type') == 'message':
-                                    for content in output.get('content', []):
-                                        if content.get('type') == 'text':
-                                            text = content.get('text', '').lower()
-                                            if 'call_end_requested' in text:
-                                                print("📞 User requested to end call")
-                                                call_should_end = True
-                    
-                    # Check for user's speech transcript
-                    if response.get('type') == 'conversation.item.input_audio_transcription.completed':
-                        transcript = response.get('transcript', '').lower()
-                        print(f"🎤 User said: {transcript}")
                         
-                        # Check if user wants to end the call
-                        if any(keyword in transcript for keyword in CALL_END_KEYWORDS):
-                            print("📞 Detected call end request in user speech")
+                        # Log error details
+                        if response['type'] == 'error':
+                            print(f"❌ OpenAI Error: {response.get('error', {})}")
+
+                    # Check for transcript in response (if available)
+                    if response.get('type') == 'conversation.item.created':
+                        item = response.get('item', {})
+                        if item.get('type') == 'message' and item.get('role') == 'assistant':
+                            # Check message content for goodbye
+                            content = item.get('content', [])
+                            for c in content:
+                                if c.get('type') == 'text':
+                                    text = c.get('text', '').lower()
+                                    print(f"🤖 AI Response Text: {text}")
+                                    if any(keyword in text for keyword in ['goodbye', 'bye', 'call_end_requested', 'end the call']):
+                                        print("📞 Detected goodbye - will end call after audio finishes")
+                                        call_should_end = True
+                    
+                    # Check response text deltas
+                    if response.get('type') == 'response.text.delta':
+                        delta_text = response.get('delta', '').lower()
+                        if delta_text and any(keyword in delta_text for keyword in ['goodbye', 'bye', 'call_end_requested']):
+                            print(f"📞 Detected goodbye in text delta: {delta_text}")
                             call_should_end = True
+                    
+                    # Check completed text responses
+                    if response.get('type') == 'response.text.done':
+                        text = response.get('text', '').lower()
+                        if text:
+                            print(f"🤖 AI Complete Text: {text}")
+                            if any(keyword in text for keyword in ['goodbye', 'bye', 'call_end_requested']):
+                                print("📞 Detected goodbye - will end call")
+                                call_should_end = True
+                    
+                    # After response is done and call should end, terminate
+                    if response.get('type') == 'response.done' and call_should_end:
+                        print("📞 AI finished speaking, terminating call...")
+                        await asyncio.sleep(2)  # Wait for audio to finish playing
+                        await websocket.close()
+                        return
 
                     # Send audio back to Twilio
                     if response.get('type') == 'response.output_audio.delta' and 'delta' in response:
@@ -200,13 +232,6 @@ async def handle_media_stream(websocket: WebSocket):
                         if last_assistant_item:
                             print(f"⏸️ Interrupting AI response: {last_assistant_item}")
                             await handle_speech_started_event()
-                    
-                    # End call if requested
-                    if call_should_end:
-                        print("📞 Ending call gracefully...")
-                        await asyncio.sleep(2)  # Give time for final message to play
-                        await websocket.close()
-                        break
                             
             except Exception as e:
                 print(f"❌ Error in voice stream: {e}")
@@ -274,9 +299,6 @@ async def initialize_session(openai_ws):
                 }
             },
             "instructions": SYSTEM_MESSAGE,
-            "input_audio_transcription": {
-                "model": "whisper-1"
-            }
         }
     }
     
