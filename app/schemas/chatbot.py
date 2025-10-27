@@ -33,6 +33,19 @@ class ChatSession(BaseModel):
         from_attributes = True
 
 
+class ChatSessionSummary(BaseModel):
+    id: str
+    session_id: str
+    chat_name: str  # Auto-generated from first message
+    message_count: int
+    created_at: str
+    updated_at: str
+    preview: str  # Short preview of first message
+    
+    class Config:
+        from_attributes = True
+
+
 class LearningPathRequest(BaseModel):
     student_id: Optional[str] = None  # Will be filled from current user if not provided
     level: str = "Beginner"

@@ -1,0 +1,1702 @@
+{
+  "info": {
+    "name": "LearnSync",
+    "description": "AI-Driven Personalized Learning Platform Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student@example.com\",\n  \"full_name\": \"John Doe\",\n  \"password\": \"securepassword123\",\n  \"role\": \"student\",\n  \"college_name\": \"Example University\",\n  \"class_grade\": \"3rd Year\",\n  \"major_subject\": \"Computer Science\",\n  \"phone_number\": \"+1234567890\",\n  \"city\": \"San Francisco\",\n  \"state\": \"California\",\n  \"learning_preferences\": [\"visual\", \"interactive\"],\n  \"interests\": [\"AI\", \"Web Development\"],\n  \"goals\": \"Master full-stack development\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user and return user data with access token"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set(\"access_token\", jsonData.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"student@example.com\",\n  \"password\": \"securepassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login user"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User Info",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Get current user information"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Current User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Updated Doe\",\n  \"phone_number\": \"+1234567899\",\n  \"learning_preferences\": [\"visual\", \"interactive\", \"hands-on\"],\n  \"interests\": [\"AI\", \"Web Development\", \"Machine Learning\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Update current user information"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Recommendations",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/recommendations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "recommendations"]
+            },
+            "description": "Get AI-powered personalized course recommendations"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/?skip=0&limit=100",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", ""],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            },
+            "description": "Get all users (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/:user_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", ":user_id"],
+              "variable": [
+                {
+                  "key": "user_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get user by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Updated Name\",\n  \"role\": \"teacher\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/:user_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", ":user_id"],
+              "variable": [
+                {
+                  "key": "user_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update user (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/:user_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", ":user_id"],
+              "variable": [
+                {
+                  "key": "user_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Delete user (Admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "Create Course",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Introduction to Python\",\n  \"description\": \"Learn Python programming from scratch\",\n  \"category\": \"Programming\",\n  \"difficulty_level\": \"beginner\",\n  \"teacher_id\": \"teacher_id_here\",\n  \"topics\": [\n    {\n      \"title\": \"Python Basics\",\n      \"description\": \"Variables, data types, and operators\",\n      \"difficulty_level\": \"beginner\",\n      \"estimated_duration\": 120\n    },\n    {\n      \"title\": \"Control Flow\",\n      \"description\": \"If statements, loops, and functions\",\n      \"difficulty_level\": \"beginner\",\n      \"estimated_duration\": 180\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/courses/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", ""]
+            },
+            "description": "Create a new course (Teacher/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Courses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/courses/?skip=0&limit=100",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", ""],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            },
+            "description": "Get all courses"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Courses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/courses/search?q=python&skip=0&limit=100",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "python"
+                },
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            },
+            "description": "Search courses by title, description, or category"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Teacher Courses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/courses/teacher/:teacher_id?skip=0&limit=100",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", "teacher", ":teacher_id"],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "teacher_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get courses by teacher"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/courses/:course_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", ":course_id"],
+              "variable": [
+                {
+                  "key": "course_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get course by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Course",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Advanced Python Programming\",\n  \"description\": \"Deep dive into Python\",\n  \"difficulty_level\": \"intermediate\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/courses/:course_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", ":course_id"],
+              "variable": [
+                {
+                  "key": "course_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update course (Teacher/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Course",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/courses/:course_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "courses", ":course_id"],
+              "variable": [
+                {
+                  "key": "course_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Delete course (Teacher/Admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Assessments",
+      "item": [
+        {
+          "name": "Create Assessment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Python Basics Quiz\",\n  \"description\": \"Test your Python knowledge\",\n  \"course_id\": \"course_id_here\",\n  \"topic\": \"Python Fundamentals\",\n  \"teacher_id\": \"teacher_id_here\",\n  \"time_limit\": 1800,\n  \"passing_score\": 70,\n  \"questions\": [\n    {\n      \"question_text\": \"What is Python?\",\n      \"question_type\": \"multiple_choice\",\n      \"options\": [\n        {\"text\": \"A programming language\", \"is_correct\": true},\n        {\"text\": \"A snake\", \"is_correct\": false},\n        {\"text\": \"A framework\", \"is_correct\": false}\n      ],\n      \"correct_answer\": \"A programming language\",\n      \"points\": 10,\n      \"explanation\": \"Python is a high-level programming language\"\n    },\n    {\n      \"question_text\": \"Python is case-sensitive\",\n      \"question_type\": \"true_false\",\n      \"correct_answer\": \"true\",\n      \"points\": 5\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/assessments/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessments", ""]
+            },
+            "description": "Create a new assessment (Teacher/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Assessments",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/assessments/course/:course_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessments", "course", ":course_id"],
+              "variable": [
+                {
+                  "key": "course_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get all assessments for a course"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Assessment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/assessments/:assessment_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessments", ":assessment_id"],
+              "variable": [
+                {
+                  "key": "assessment_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get assessment by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Assessment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Quiz Title\",\n  \"time_limit\": 2400,\n  \"passing_score\": 75\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/assessments/:assessment_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessments", ":assessment_id"],
+              "variable": [
+                {
+                  "key": "assessment_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update assessment (Teacher/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Assessment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/assessments/:assessment_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessments", ":assessment_id"],
+              "variable": [
+                {
+                  "key": "assessment_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Delete assessment (Teacher/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Assessment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assessment_id\": \"assessment_id_here\",\n  \"student_id\": \"student_id_here\",\n  \"answers\": [\n    {\n      \"question_index\": 0,\n      \"answer\": \"A programming language\"\n    },\n    {\n      \"question_index\": 1,\n      \"answer\": \"true\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/assessments/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessments", "submit"]
+            },
+            "description": "Submit assessment and get AI-powered feedback"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Results",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/assessments/results/student/:student_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessments", "results", "student", ":student_id"],
+              "variable": [
+                {
+                  "key": "student_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get assessment results for a student"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Assessment Results",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/assessments/results/:assessment_id/student/:student_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "assessments", "results", ":assessment_id", "student", ":student_id"],
+              "variable": [
+                {
+                  "key": "assessment_id",
+                  "value": ""
+                },
+                {
+                  "key": "student_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get specific assessment results for a student"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Update Progress",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completed_topics\": [\"Python Basics\", \"Control Flow\"],\n  \"current_topic\": \"Data Structures\",\n  \"total_time_spent\": 3600,\n  \"completion_percentage\": 45.5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/analytics/progress?student_id=student_id_here&course_id=course_id_here",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analytics", "progress"],
+              "query": [
+                {
+                  "key": "student_id",
+                  "value": "student_id_here"
+                },
+                {
+                  "key": "course_id",
+                  "value": "course_id_here"
+                }
+              ]
+            },
+            "description": "Update student progress"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Progress",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/progress/student/:student_id?course_id=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analytics", "progress", "student", ":student_id"],
+              "query": [
+                {
+                  "key": "course_id",
+                  "value": ""
+                }
+              ],
+              "variable": [
+                {
+                  "key": "student_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get student progress"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Analytics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/student/:student_id/course/:course_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analytics", "student", ":student_id", "course", ":course_id"],
+              "variable": [
+                {
+                  "key": "student_id",
+                  "value": ""
+                },
+                {
+                  "key": "course_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get comprehensive student analytics"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Class Analytics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/analytics/class/course/:course_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "analytics", "class", "course", ":course_id"],
+              "variable": [
+                {
+                  "key": "course_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get class-wide analytics (Teacher/Admin only)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Gamification",
+      "item": [
+        {
+          "name": "Get Available Badges",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rewards/badges",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rewards", "badges"]
+            },
+            "description": "Get all available badges"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Rewards",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rewards/student/:student_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rewards", "student", ":student_id"],
+              "variable": [
+                {
+                  "key": "student_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get student's rewards and achievements"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Points",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": \"student_id_here\",\n  \"points\": 50,\n  \"reason\": \"Completed assessment with high score\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/rewards/points",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rewards", "points"]
+            },
+            "description": "Add points to a student (Teacher/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Award Badge",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": \"student_id_here\",\n  \"badge_name\": \"Quick Learner\",\n  \"reason\": \"Completed course in record time\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/rewards/badge",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rewards", "badge"]
+            },
+            "description": "Award a badge to a student (Teacher/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Leaderboard",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/rewards/leaderboard?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rewards", "leaderboard"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get leaderboard"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "AI Chatbot",
+      "item": [
+        {
+          "name": "Ask Chatbot",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"What is object-oriented programming?\",\n  \"session_id\": null,\n  \"student_id\": \"student_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chatbot/ask",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chatbot", "ask"]
+            },
+            "description": "Ask the AI chatbot a question (session_id auto-generated for new chats)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Chat Session",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/chatbot/sessions/:session_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chatbot", "sessions", ":session_id"],
+              "variable": [
+                {
+                  "key": "session_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get chat session by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Chat Session",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/chatbot/sessions/:session_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chatbot", "sessions", ":session_id"],
+              "variable": [
+                {
+                  "key": "session_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Delete chat session"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Student Sessions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/chatbot/sessions/student/:student_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chatbot", "sessions", "student", ":student_id"],
+              "variable": [
+                {
+                  "key": "student_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get all chat sessions for a student"
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Learning Path",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"student_id\": \"student_id_here\",\n  \"level\": \"Beginner\",\n  \"subjects\": [\"Python\", \"Data Science\"],\n  \"weak_areas\": [\"Statistics\", \"Linear Algebra\"],\n  \"learning_style\": \"Visual\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chatbot/learning-path",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chatbot", "learning-path"]
+            },
+            "description": "Generate personalized learning path"
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Feedback",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What is a variable in Python?\",\n  \"student_answer\": \"A variable is something that stores data\",\n  \"correct_answer\": \"A variable is a named location in memory used to store data that can be modified during program execution\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chatbot/feedback",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chatbot", "feedback"]
+            },
+            "description": "Generate AI feedback for an answer"
+          },
+          "response": []
+        },
+        {
+          "name": "Explain Concept",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"concept\": \"Recursion in programming\",\n  \"difficulty_level\": \"medium\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/chatbot/explain",
+              "host": ["{{base_url}}"],
+              "path": ["api", "chatbot", "explain"]
+            },
+            "description": "Get AI explanation of a concept"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Communication",
+      "item": [
+        {
+          "name": "Send Message",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sender_id\": \"sender_id_here\",\n  \"receiver_id\": \"receiver_id_here\",\n  \"subject\": \"Course Question\",\n  \"content\": \"I have a question about the last lecture\",\n  \"message_type\": \"direct\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/communication/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "communication", "messages"]
+            },
+            "description": "Send a message"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/communication/messages?message_type=direct",
+              "host": ["{{base_url}}"],
+              "path": ["api", "communication", "messages"],
+              "query": [
+                {
+                  "key": "message_type",
+                  "value": "direct"
+                }
+              ]
+            },
+            "description": "Get messages for current user"
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Message As Read",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/communication/messages/:message_id/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "communication", "messages", ":message_id", "read"],
+              "variable": [
+                {
+                  "key": "message_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Mark message as read"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/communication/messages/:message_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "communication", "messages", ":message_id"],
+              "variable": [
+                {
+                  "key": "message_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Delete message"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Session",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Live Coding Session\",\n  \"description\": \"Learn Python with live examples\",\n  \"course_id\": \"course_id_here\",\n  \"teacher_id\": \"teacher_id_here\",\n  \"session_type\": \"live\",\n  \"scheduled_time\": \"2025-10-28T10:00:00Z\",\n  \"duration\": 3600,\n  \"materials\": [\"https://example.com/materials.pdf\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/communication/sessions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "communication", "sessions"]
+            },
+            "description": "Create a session (Teacher/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Session",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/communication/sessions/:session_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "communication", "sessions", ":session_id"],
+              "variable": [
+                {
+                  "key": "session_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get session by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Session",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Session Title\",\n  \"scheduled_time\": \"2025-10-28T14:00:00Z\",\n  \"recording_url\": \"https://example.com/recording.mp4\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/communication/sessions/:session_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "communication", "sessions", ":session_id"],
+              "variable": [
+                {
+                  "key": "session_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update session (Teacher/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Session",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/communication/sessions/:session_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "communication", "sessions", ":session_id"],
+              "variable": [
+                {
+                  "key": "session_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Delete session (Teacher/Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Course Sessions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/communication/sessions/course/:course_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "communication", "sessions", "course", ":course_id"],
+              "variable": [
+                {
+                  "key": "course_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get sessions for a course"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Teacher Sessions",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/communication/sessions/teacher/:teacher_id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "communication", "sessions", "teacher", ":teacher_id"],
+              "variable": [
+                {
+                  "key": "teacher_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Get sessions by teacher"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Root endpoint"
+          },
+          "response": []
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Health check endpoint"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

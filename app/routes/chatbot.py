@@ -4,6 +4,7 @@ from app.schemas.chatbot import (
     ChatRequest, 
     ChatResponse, 
     ChatSession,
+    ChatSessionSummary,
     LearningPathRequest,
     FeedbackRequest,
     ConceptExplanationRequest
@@ -53,17 +54,17 @@ async def get_chat_session(
     return session
 
 
-@router.get("/sessions/student/{student_id}", response_model=List[ChatSession])
+@router.get("/sessions/student/{student_id}", response_model=List[ChatSessionSummary])
 async def get_student_sessions(
     student_id: str,
     current_user: dict = Depends(get_current_user)
 ):
-    """Get all chat sessions for a student"""
+    """Get all chat sessions summary for a student (without full message history)"""
     # Students can only view their own sessions
     if current_user["role"] == "student" and student_id != current_user["id"]:
         raise HTTPException(status_code=403, detail="Cannot view other students' sessions")
     
-    sessions = await chatbot_service.get_student_sessions(student_id)
+    sessions = await chatbot_service.get_student_sessions_summary(student_id)
     return sessions
 
 

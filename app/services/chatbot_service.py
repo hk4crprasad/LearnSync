@@ -82,11 +82,57 @@ class ChatbotService:
         session = await self.collection.find_one({"session_id": session_id})
         return serialize_doc(session) if session else None
     
+    def _generate_chat_name(self, first_message: str, max_length: int = 50) -> str:
+        """Generate a chat name from the first user message"""
+        # Clean and truncate the message
+        clean_message = first_message.strip()
+        
+        # If message is short enough, use it as-is
+        if len(clean_message) <= max_length:
+            return clean_message
+        
+        # Truncate and add ellipsis
+        return clean_message[:max_length].rsplit(' ', 1)[0] + "..."
+    
     async def get_student_sessions(self, student_id: str) -> List[dict]:
         """Get all chat sessions for a student"""
         cursor = self.collection.find({"student_id": student_id}).sort("updated_at", -1)
         sessions = await cursor.to_list(length=None)
         return serialize_list(sessions)
+    
+    async def get_student_sessions_summary(self, student_id: str) -> List[dict]:
+        """Get summary of all chat sessions for a student (without full messages)"""
+        cursor = self.collection.find({"student_id": student_id}).sort("updated_at", -1)
+        sessions = await cursor.to_list(length=None)
+        
+        summaries = []
+        for session in sessions:
+            messages = session.get("messages", [])
+            
+            # Find first user message
+            first_user_message = next(
+                (msg["content"] for msg in messages if msg.get("role") == "user"),
+                "New Chat"
+            )
+            
+            # Generate chat name from first message
+            chat_name = self._generate_chat_name(first_user_message)
+            
+            # Create preview (first 100 chars of first message)
+            preview = first_user_message[:100] + "..." if len(first_user_message) > 100 else first_user_message
+            
+            summary = {
+                "id": str(session["_id"]),
+                "session_id": session["session_id"],
+                "chat_name": chat_name,
+                "message_count": len(messages),
+                "created_at": session["created_at"],
+                "updated_at": session["updated_at"],
+                "preview": preview
+            }
+            summaries.append(summary)
+        
+        return summaries
     
     async def delete_session(self, session_id: str) -> bool:
         """Delete chat session"""
