@@ -32,7 +32,8 @@ ENV/
 *.swp
 *.swo
 *~
-
+*.xml
+uv.lock
 # Environment Variables
 .env
 
