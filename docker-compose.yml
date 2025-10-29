@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  learnsync-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: learnsync-backend
+    ports:
+      - "6765:6765"
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:6765/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - learnsync-network
+
+networks:
+  learnsync-network:
+    driver: bridge

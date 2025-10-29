@@ -12,40 +12,37 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration
-OPENAI_API_KEY = "4fecciXsfzJOkbG7ZD8lMQhX1OFa0Frsosane9ClwVvyzKmvuUvuJQQJ99BJACfhMk5XJ3w3AAABACOG1Gz8"
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', 'AIzaSyD4v0s6N2_R2QOAntBZFz1qMnqE8nxoJAU')
 PORT = int(os.getenv('PORT', 5050))
-TEMPERATURE = float(os.getenv('TEMPERATURE', 0.8))
 SYSTEM_MESSAGE = (
     "You are a helpful and bubbly AI assistant who loves to chat about "
     "anything the user is interested in and is prepared to offer them facts. "
     "You have a penchant for dad jokes, owl jokes, and rickrolling – subtly. "
     "Always stay positive, but work in a joke when appropriate."
 )
-VOICE = 'alloy'
+# Available voices: Puck, Charon, Kore, Fenrir, Aoede (30+ HD voices in 24 languages)
+VOICE = 'Puck'
 LOG_EVENT_TYPES = [
-    'error', 'response.content.done', 'rate_limits.updated',
-    'response.done', 'input_audio_buffer.committed',
-    'input_audio_buffer.speech_stopped', 'input_audio_buffer.speech_started',
-    'session.created', 'session.updated'
+    'setupComplete', 'interrupted', 'toolCall', 'toolCallCancellation',
+    'serverContent', 'turnComplete'
 ]
 SHOW_TIMING_MATH = False
 
 app = FastAPI()
 
-if not OPENAI_API_KEY:
-    raise ValueError('Missing the OpenAI API key. Please set it in the .env file.')
+if not GEMINI_API_KEY:
+    raise ValueError('Missing the Gemini API key. Please set it in the .env file.')
 
 @app.get("/", response_class=JSONResponse)
 async def index_page():
-    return {"message": "Twilio Media Stream Server is running!"}
+    return {"message": "Twilio Media Stream Server with Gemini 2.5 Flash Native Audio is running!"}
 
 @app.api_route("/incoming-call", methods=["GET", "POST"])
 async def handle_incoming_call(request: Request):
     """Handle incoming call and return TwiML response to connect to Media Stream."""
     response = VoiceResponse()
-    # <Say> punctuation to improve text-to-speech flow
     response.say(
-        "Please wait while we connect your call to the A. I. voice assistant, powered by Twilio and the Open A I Realtime API",
+        "Please wait while we connect your call to the A. I. voice assistant, powered by Twilio and Google Gemini 2.5",
         voice="Google.en-US-Chirp3-HD-Aoede"
     )
     response.pause(length=1)
@@ -61,121 +58,141 @@ async def handle_incoming_call(request: Request):
 
 @app.websocket("/media-stream")
 async def handle_media_stream(websocket: WebSocket):
-    """Handle WebSocket connections between Twilio and OpenAI."""
+    """Handle WebSocket connections between Twilio and Gemini Live API."""
     print("Client connected")
     await websocket.accept()
 
-    async with websockets.connect(
-        f"wss://cropio.cognitiveservices.azure.com/openai/v1/realtime?model=gpt-realtime&temperature={TEMPERATURE}",
-        additional_headers={
-            "Authorization": f"Bearer {OPENAI_API_KEY}"
-        }
-    ) as openai_ws:
-        await initialize_session(openai_ws)
+    # Gemini Live API WebSocket URL with the native audio model
+    gemini_url = f"wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key={GEMINI_API_KEY}"
+
+    async with websockets.connect(gemini_url) as gemini_ws:
+        await initialize_session(gemini_ws)
 
         # Connection specific state
         stream_sid = None
         latest_media_timestamp = 0
-        last_assistant_item = None
-        mark_queue = []
         response_start_timestamp_twilio = None
+        mark_queue = []
         
         async def receive_from_twilio():
-            """Receive audio data from Twilio and send it to the OpenAI Realtime API."""
+            """Receive audio data from Twilio and send it to Gemini Live API."""
             nonlocal stream_sid, latest_media_timestamp
             try:
                 async for message in websocket.iter_text():
                     data = json.loads(message)
-                    if data['event'] == 'media' and openai_ws.state.name == 'OPEN':
+                    
+                    if data['event'] == 'media':
                         latest_media_timestamp = int(data['media']['timestamp'])
-                        audio_append = {
-                            "type": "input_audio_buffer.append",
-                            "audio": data['media']['payload']
+                        
+                        # Twilio sends mulaw audio at 8kHz, we need to send it to Gemini
+                        # Gemini expects PCM16 at 16kHz
+                        audio_payload = data['media']['payload']
+                        
+                        # Send audio to Gemini as realtimeInput
+                        audio_message = {
+                            "realtimeInput": {
+                                "mediaChunks": [{
+                                    "mimeType": "audio/pcm;rate=8000",
+                                    "data": audio_payload
+                                }]
+                            }
                         }
-                        await openai_ws.send(json.dumps(audio_append))
+                        await gemini_ws.send(json.dumps(audio_message))
+                        
                     elif data['event'] == 'start':
                         stream_sid = data['start']['streamSid']
                         print(f"Incoming stream has started {stream_sid}")
                         response_start_timestamp_twilio = None
                         latest_media_timestamp = 0
-                        last_assistant_item = None
+                        
                     elif data['event'] == 'mark':
                         if mark_queue:
                             mark_queue.pop(0)
+                            
             except WebSocketDisconnect:
                 print("Client disconnected.")
-                if openai_ws.state.name == 'OPEN':
-                    await openai_ws.close()
+                if not gemini_ws.closed:
+                    await gemini_ws.close()
 
         async def send_to_twilio():
-            """Receive events from the OpenAI Realtime API, send audio back to Twilio."""
-            nonlocal stream_sid, last_assistant_item, response_start_timestamp_twilio
+            """Receive events from Gemini Live API, send audio back to Twilio."""
+            nonlocal stream_sid, response_start_timestamp_twilio
             try:
-                async for openai_message in openai_ws:
-                    response = json.loads(openai_message)
-                    if response['type'] in LOG_EVENT_TYPES:
-                        print(f"Received event: {response['type']}", response)
+                async for gemini_message in gemini_ws:
+                    response = json.loads(gemini_message)
+                    
+                    # Log specific event types
+                    if any(event_type in str(response) for event_type in LOG_EVENT_TYPES):
+                        print(f"Received event: {json.dumps(response, indent=2)}")
 
-                    if response.get('type') == 'response.output_audio.delta' and 'delta' in response:
-                        audio_payload = base64.b64encode(base64.b64decode(response['delta'])).decode('utf-8')
-                        audio_delta = {
-                            "event": "media",
-                            "streamSid": stream_sid,
-                            "media": {
-                                "payload": audio_payload
-                            }
-                        }
-                        await websocket.send_json(audio_delta)
+                    # Handle setup completion
+                    if 'setupComplete' in response:
+                        print("Gemini session setup complete")
+                        continue
 
+                    # Handle server content (audio output from Gemini)
+                    if 'serverContent' in response:
+                        server_content = response['serverContent']
+                        
+                        # Check for audio data in model turn
+                        if 'modelTurn' in server_content:
+                            model_turn = server_content['modelTurn']
+                            
+                            if 'parts' in model_turn:
+                                for part in model_turn['parts']:
+                                    # Handle inline audio data
+                                    if 'inlineData' in part:
+                                        inline_data = part['inlineData']
+                                        if 'data' in inline_data:
+                                            # Gemini sends PCM16 at 24kHz
+                                            # We need to send it to Twilio (which expects mulaw at 8kHz)
+                                            audio_data = inline_data['data']
+                                            
+                                            audio_delta = {
+                                                "event": "media",
+                                                "streamSid": stream_sid,
+                                                "media": {
+                                                    "payload": audio_data
+                                                }
+                                            }
+                                            await websocket.send_json(audio_delta)
 
-                        if response.get("item_id") and response["item_id"] != last_assistant_item:
-                            response_start_timestamp_twilio = latest_media_timestamp
-                            last_assistant_item = response["item_id"]
-                            if SHOW_TIMING_MATH:
-                                print(f"Setting start timestamp for new response: {response_start_timestamp_twilio}ms")
+                                            if response_start_timestamp_twilio is None:
+                                                response_start_timestamp_twilio = latest_media_timestamp
+                                                if SHOW_TIMING_MATH:
+                                                    print(f"Setting start timestamp: {response_start_timestamp_twilio}ms")
 
-                        await send_mark(websocket, stream_sid)
+                                            await send_mark(websocket, stream_sid)
+                        
+                        # Check for turn complete
+                        if server_content.get('turnComplete'):
+                            print("Turn complete")
+                            response_start_timestamp_twilio = None
 
-                    # Trigger an interruption. Your use case might work better using `input_audio_buffer.speech_stopped`, or combining the two.
-                    if response.get('type') == 'input_audio_buffer.speech_started':
-                        print("Speech started detected.")
-                        if last_assistant_item:
-                            print(f"Interrupting response with id: {last_assistant_item}")
-                            await handle_speech_started_event()
+                    # Handle interruption
+                    if 'interrupted' in response:
+                        print("Speech interrupted")
+                        await handle_interruption()
+                        
             except Exception as e:
                 print(f"Error in send_to_twilio: {e}")
 
-        async def handle_speech_started_event():
-            """Handle interruption when the caller's speech starts."""
-            nonlocal response_start_timestamp_twilio, last_assistant_item
-            print("Handling speech started event.")
-            if mark_queue and response_start_timestamp_twilio is not None:
-                elapsed_time = latest_media_timestamp - response_start_timestamp_twilio
-                if SHOW_TIMING_MATH:
-                    print(f"Calculating elapsed time for truncation: {latest_media_timestamp} - {response_start_timestamp_twilio} = {elapsed_time}ms")
+        async def handle_interruption():
+            """Handle interruption when caller speaks."""
+            nonlocal response_start_timestamp_twilio
+            print("Handling interruption")
+            
+            # Clear Twilio's audio buffer
+            await websocket.send_json({
+                "event": "clear",
+                "streamSid": stream_sid
+            })
 
-                if last_assistant_item:
-                    if SHOW_TIMING_MATH:
-                        print(f"Truncating item with ID: {last_assistant_item}, Truncated at: {elapsed_time}ms")
-
-                    truncate_event = {
-                        "type": "conversation.item.truncate",
-                        "item_id": last_assistant_item,
-                        "content_index": 0,
-                        "audio_end_ms": elapsed_time
-                    }
-                    await openai_ws.send(json.dumps(truncate_event))
-
-                await websocket.send_json({
-                    "event": "clear",
-                    "streamSid": stream_sid
-                })
-
-                mark_queue.clear()
-                last_assistant_item = None
-                response_start_timestamp_twilio = None
+            mark_queue.clear()
+            response_start_timestamp_twilio = None
 
         async def send_mark(connection, stream_sid):
+            """Send mark event to track audio playback."""
             if stream_sid:
                 mark_event = {
                     "event": "mark",
@@ -187,51 +204,58 @@ async def handle_media_stream(websocket: WebSocket):
 
         await asyncio.gather(receive_from_twilio(), send_to_twilio())
 
-async def send_initial_conversation_item(openai_ws):
-    """Send initial conversation item if AI talks first."""
-    initial_conversation_item = {
-        "type": "conversation.item.create",
-        "item": {
-            "type": "message",
-            "role": "user",
-            "content": [
-                {
-                    "type": "input_text",
-                    "text": "Greet the user with 'Hello there! I am an AI voice assistant powered by Twilio and the OpenAI Realtime API. You can ask me for facts, jokes, or anything you can imagine. How can I help you?'"
-                }
-            ]
+async def send_initial_conversation(gemini_ws):
+    """Send initial conversation to have AI speak first."""
+    initial_message = {
+        "clientContent": {
+            "turns": [{
+                "role": "user",
+                "parts": [{
+                    "text": "Greet the user with 'Hello there! I am an AI voice assistant powered by Twilio and Google Gemini 2.5. You can ask me for facts, jokes, or anything you can imagine. How can I help you?'"
+                }]
+            }],
+            "turnComplete": True
         }
     }
-    await openai_ws.send(json.dumps(initial_conversation_item))
-    await openai_ws.send(json.dumps({"type": "response.create"}))
+    await gemini_ws.send(json.dumps(initial_message))
 
-
-async def initialize_session(openai_ws):
-    """Control initial session with OpenAI."""
-    session_update = {
-        "type": "session.update",
-        "session": {
-            "type": "realtime",
-            "model": "gpt-realtime",
-            "output_modalities": ["audio"],
-            "audio": {
-                "input": {
-                    "format": {"type": "audio/pcmu"},
-                    "turn_detection": {"type": "server_vad"}
-                },
-                "output": {
-                    "format": {"type": "audio/pcmu"},
-                    "voice": VOICE
+async def initialize_session(gemini_ws):
+    """Initialize session with Gemini Live API using native audio model."""
+    
+    # Setup message for gemini-2.5-flash-native-audio-preview-09-2025
+    setup_message = {
+        "setup": {
+            "model": "models/gemini-2.5-flash-native-audio-preview-09-2025",
+            "generationConfig": {
+                "responseModalities": ["AUDIO"],
+                "speechConfig": {
+                    "voiceConfig": {
+                        "prebuiltVoiceConfig": {
+                            "voiceName": VOICE
+                        }
+                    }
                 }
             },
-            "instructions": SYSTEM_MESSAGE,
+            "systemInstruction": {
+                "parts": [{
+                    "text": SYSTEM_MESSAGE
+                }]
+            },
+            # Enable transcription for debugging (optional)
+            # "inputAudioTranscription": {},
+            # "outputAudioTranscription": {}
         }
     }
-    print('Sending session update:', json.dumps(session_update))
-    await openai_ws.send(json.dumps(session_update))
-
-    # Uncomment the next line to have the AI speak first
-    # await send_initial_conversation_item(openai_ws)
+    
+    print('Sending setup message to Gemini:', json.dumps(setup_message, indent=2))
+    await gemini_ws.send(json.dumps(setup_message))
+    
+    # Wait for setup completion
+    setup_response = await gemini_ws.recv()
+    print(f"Received setup response: {setup_response}")
+    
+    # Uncomment to have AI speak first
+    # await send_initial_conversation(gemini_ws)
 
 if __name__ == "__main__":
     import uvicorn
