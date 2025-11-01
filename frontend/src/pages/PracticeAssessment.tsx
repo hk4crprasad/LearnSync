@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Sparkles, CheckCircle2, XCircle, BookOpen, ArrowLeft, RefreshCw } from "lucide-react";
+import { Loader2, Sparkles, CheckCircle2, XCircle, BookOpen, ArrowLeft, RefreshCw, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -49,6 +49,9 @@ const PracticeAssessment = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState(0);
+  const [hints, setHints] = useState<string[]>([]);
+  const [currentHintLevel, setCurrentHintLevel] = useState(0);
+  const [isLoadingHint, setIsLoadingHint] = useState(false);
 
   useEffect(() => {
     loadCourses();
@@ -139,6 +142,8 @@ const PracticeAssessment = () => {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setSelectedAnswer("");
       setShowExplanation(false);
+      setHints([]);
+      setCurrentHintLevel(0);
     } else {
       setStep("results");
     }
@@ -152,6 +157,34 @@ const PracticeAssessment = () => {
     setSelectedAnswer("");
     setShowExplanation(false);
     setScore(0);
+    setHints([]);
+    setCurrentHintLevel(0);
+  };
+
+  const loadHints = async () => {
+    if (hints.length > 0) {
+      // Already loaded, just show next level
+      if (currentHintLevel < hints.length - 1) {
+        setCurrentHintLevel(currentHintLevel + 1);
+      }
+      return;
+    }
+
+    setIsLoadingHint(true);
+    try {
+      const currentQuestion = questions[currentQuestionIndex];
+      const result = await api.getAdaptiveHints(
+        currentQuestion.question_text,
+        config.difficulty_level
+      );
+      setHints(result.hints);
+      setCurrentHintLevel(0);
+      toast.success("Hint revealed!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to load hints");
+    } finally {
+      setIsLoadingHint(false);
+    }
   };
 
   const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
@@ -369,6 +402,40 @@ const PracticeAssessment = () => {
                   );
                 })}
               </div>
+
+              {/* Adaptive Hints */}
+              {!showExplanation && (
+                <div className="pt-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={loadHints}
+                    disabled={isLoadingHint}
+                    className="gap-2"
+                  >
+                    {isLoadingHint ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                    {hints.length === 0 ? "Get a Hint" : currentHintLevel < hints.length - 1 ? "Show Next Hint" : "All Hints Shown"}
+                  </Button>
+                  {hints.length > 0 && (
+                    <Card className="mt-3 border-2 border-yellow-200 bg-yellow-50">
+                      <CardContent className="pt-4">
+                        <div className="space-y-2">
+                          {hints.slice(0, currentHintLevel + 1).map((hint, idx) => (
+                            <div key={idx} className="flex gap-2">
+                              <Badge variant="outline" className="shrink-0">Hint {idx + 1}</Badge>
+                              <p className="text-sm text-yellow-900">{hint}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
 
               {showExplanation && currentQuestion.explanation && (
                 <Card className="border-2 border-blue-200 bg-blue-50">

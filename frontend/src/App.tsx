@@ -23,6 +23,7 @@ import AssessmentResult from "./pages/AssessmentResult";
 import NotFound from "./pages/NotFound";
 import RoleDashboard from "./pages/RoleDashboard";
 import PracticeAssessment from "./pages/PracticeAssessment";
+import AdaptiveLearning from "./pages/AdaptiveLearning";
 
 const queryClient = new QueryClient();
 
@@ -139,6 +140,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PracticeAssessment />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/adaptive-learning"
+              element={
+                <ProtectedRoute>
+                  <AdaptiveLearning />
                 </ProtectedRoute>
               }
             />

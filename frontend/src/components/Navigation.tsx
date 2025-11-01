@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, LogOut, User, BookOpen, LayoutDashboard, Shield, MessageSquare } from "lucide-react";
+import { GraduationCap, LogOut, User, BookOpen, LayoutDashboard, Shield, MessageSquare, Brain } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,6 +66,18 @@ const Navigation = () => {
                     AI Chat
                   </Link>
                 </Button>
+                {user?.role === "student" && (
+                  <Button
+                    variant={isActive("/adaptive-learning") ? "default" : "ghost"}
+                    asChild
+                    size="sm"
+                  >
+                    <Link to="/adaptive-learning">
+                      <Brain className="h-4 w-4 mr-2" />
+                      Adaptive
+                    </Link>
+                  </Button>
+                )}
                 {user?.role === "admin" && (
                   <Button
                     variant={isActive("/admin") ? "default" : "ghost"}

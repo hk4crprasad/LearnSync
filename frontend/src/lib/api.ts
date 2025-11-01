@@ -482,6 +482,33 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  // Adaptive Learning Endpoints
+  async getAdaptivePerformance(): Promise<any> {
+    return this.request("/analytics/adaptive/performance");
+  }
+
+  async getPersonalizedStudyPlan(): Promise<any> {
+    return this.request("/analytics/adaptive/study-plan");
+  }
+
+  async getAdaptiveHints(question_text: string, difficulty: string): Promise<{ hints: string[] }> {
+    return this.request("/analytics/adaptive/hints", {
+      method: "POST",
+      body: JSON.stringify({ question_text, difficulty }),
+    });
+  }
+
+  async getAdaptiveFeedback(
+    question: Question,
+    student_answer: string,
+    is_correct: boolean
+  ): Promise<{ feedback: string }> {
+    return this.request("/analytics/adaptive/feedback", {
+      method: "POST",
+      body: JSON.stringify({ question, student_answer, is_correct }),
+    });
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL);

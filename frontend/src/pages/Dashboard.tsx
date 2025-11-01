@@ -62,28 +62,54 @@ const Dashboard = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* AI Practice Quick Action */}
-        <Card className="mb-6 animate-fade-up border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Sparkles className="h-6 w-6 text-primary" />
+        {/* Quick Actions */}
+        <div className="grid md:grid-cols-2 gap-4 mb-6">
+          {/* AI Practice Quick Action */}
+          <Card className="animate-fade-up border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">AI Practice Assessment</h3>
+                    <p className="text-sm text-muted-foreground">Generate personalized questions</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">AI Practice Assessment</h3>
-                  <p className="text-sm text-muted-foreground">Generate personalized questions on any topic</p>
-                </div>
+                <Link to="/practice">
+                  <Button className="gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Start Practice
+                  </Button>
+                </Link>
               </div>
-              <Link to="/practice">
-                <Button className="gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  Start Practice
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Adaptive Learning Quick Action */}
+          <Card className="animate-fade-up border-2 border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-purple-500/5">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                    <TrendingUp className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Adaptive Learning Plan</h3>
+                    <p className="text-sm text-muted-foreground">Get personalized study recommendations</p>
+                  </div>
+                </div>
+                <Link to="/adaptive-learning">
+                  <Button variant="outline" className="gap-2 border-blue-500/50">
+                    <TrendingUp className="h-4 w-4" />
+                    View Plan
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Stats Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
