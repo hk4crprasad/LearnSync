@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, LogOut, User, BookOpen, LayoutDashboard, Shield, MessageSquare, Brain, Award, Radio, Youtube } from "lucide-react";
+import { GraduationCap, LogOut, User, BookOpen, LayoutDashboard, Shield, MessageSquare, Brain, Award, Radio, Youtube, Gamepad2, Menu } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,14 +9,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
 
 const Navigation = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -39,7 +46,8 @@ const Navigation = () => {
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
             <>
-              <div className="hidden md:flex items-center gap-2">
+              {/* Desktop Navigation - Order: Dashboard, AI Chat, Game, Courses, Video Courses, Adaptive, Language, Dark Mode, Profile */}
+              <div className="hidden lg:flex items-center gap-2">
                 <Button
                   variant={isActive("/dashboard") ? "default" : "ghost"}
                   asChild
@@ -51,16 +59,6 @@ const Navigation = () => {
                   </Link>
                 </Button>
                 <Button
-                  variant={isActive("/courses") ? "default" : "ghost"}
-                  asChild
-                  size="sm"
-                >
-                  <Link to="/courses">
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    {t("nav.courses")}
-                  </Link>
-                </Button>
-                <Button
                   variant={isActive("/chatbot") ? "default" : "ghost"}
                   asChild
                   size="sm"
@@ -68,6 +66,26 @@ const Navigation = () => {
                   <Link to="/chatbot">
                     <MessageSquare className="h-4 w-4 mr-2" />
                     {t("nav.ai_chat")}
+                  </Link>
+                </Button>
+                <Button
+                  variant={isActive("/game") ? "default" : "ghost"}
+                  asChild
+                  size="sm"
+                >
+                  <Link to="/game">
+                    <Gamepad2 className="h-4 w-4 mr-2" />
+                    {t("nav.game")}
+                  </Link>
+                </Button>
+                <Button
+                  variant={isActive("/courses") ? "default" : "ghost"}
+                  asChild
+                  size="sm"
+                >
+                  <Link to="/courses">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    {t("nav.courses")}
                   </Link>
                 </Button>
                 <Button
@@ -106,82 +124,189 @@ const Navigation = () => {
                 )}
               </div>
 
-              <LanguageSwitcher />
-              <ThemeToggle />
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="h-4 w-4 text-primary" />
+              {/* Mobile/Tablet - Show only AI Chat, Dark Mode, and Hamburger Menu */}
+              <div className="flex lg:hidden items-center gap-2">
+                <Button
+                  variant={isActive("/chatbot") ? "default" : "ghost"}
+                  asChild
+                  size="sm"
+                >
+                  <Link to="/chatbot">
+                    <MessageSquare className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <ThemeToggle />
+                
+                {/* Sidebar Menu */}
+                <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-80">
+                    <div className="flex flex-col gap-4 mt-8">
+                      <h2 className="text-lg font-semibold mb-4">{t("nav.dashboard")}</h2>
+                      
+                      <Button
+                        variant={isActive("/dashboard") ? "default" : "ghost"}
+                        asChild
+                        className="justify-start"
+                        onClick={() => setSidebarOpen(false)}
+                      >
+                        <Link to="/dashboard">
+                          <LayoutDashboard className="h-4 w-4 mr-2" />
+                          {t("nav.dashboard")}
+                        </Link>
+                      </Button>
+                      
+                      <Button
+                        variant={isActive("/chatbot") ? "default" : "ghost"}
+                        asChild
+                        className="justify-start"
+                        onClick={() => setSidebarOpen(false)}
+                      >
+                        <Link to="/chatbot">
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          {t("nav.ai_chat")}
+                        </Link>
+                      </Button>
+                      
+                      <Button
+                        variant={isActive("/game") ? "default" : "ghost"}
+                        asChild
+                        className="justify-start"
+                        onClick={() => setSidebarOpen(false)}
+                      >
+                        <Link to="/game">
+                          <Gamepad2 className="h-4 w-4 mr-2" />
+                          {t("nav.game")}
+                        </Link>
+                      </Button>
+                      
+                      <Button
+                        variant={isActive("/courses") ? "default" : "ghost"}
+                        asChild
+                        className="justify-start"
+                        onClick={() => setSidebarOpen(false)}
+                      >
+                        <Link to="/courses">
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          {t("nav.courses")}
+                        </Link>
+                      </Button>
+                      
+                      <Button
+                        variant={isActive("/youtube-courses") ? "default" : "ghost"}
+                        asChild
+                        className="justify-start"
+                        onClick={() => setSidebarOpen(false)}
+                      >
+                        <Link to="/youtube-courses">
+                          <Youtube className="h-4 w-4 mr-2" />
+                          {t("nav.video_courses")}
+                        </Link>
+                      </Button>
+                      
+                      {user?.role === "student" && (
+                        <Button
+                          variant={isActive("/adaptive-learning") ? "default" : "ghost"}
+                          asChild
+                          className="justify-start"
+                          onClick={() => setSidebarOpen(false)}
+                        >
+                          <Link to="/adaptive-learning">
+                            <Brain className="h-4 w-4 mr-2" />
+                            {t("nav.adaptive")}
+                          </Link>
+                        </Button>
+                      )}
+                      
+                      {user?.role === "admin" && (
+                        <Button
+                          variant={isActive("/admin") ? "default" : "ghost"}
+                          asChild
+                          className="justify-start"
+                          onClick={() => setSidebarOpen(false)}
+                        >
+                          <Link to="/admin">
+                            <Shield className="h-4 w-4 mr-2" />
+                            {t("nav.admin")}
+                          </Link>
+                        </Button>
+                      )}
+                      
+                      <div className="border-t pt-4 mt-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-sm font-medium">{t("nav.profile")}</span>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex flex-col space-y-1 p-3 bg-muted rounded-lg">
+                            <p className="text-sm font-medium">{user?.full_name}</p>
+                            <p className="text-xs text-muted-foreground">{user?.email}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            className="justify-start"
+                            asChild
+                            onClick={() => setSidebarOpen(false)}
+                          >
+                            <Link to="/profile">
+                              <User className="h-4 w-4 mr-2" />
+                              {t("nav.profile")}
+                            </Link>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="justify-start text-destructive hover:text-destructive"
+                            onClick={() => {
+                              setSidebarOpen(false);
+                              handleLogout();
+                            }}
+                          >
+                            <LogOut className="h-4 w-4 mr-2" />
+                            {t("nav.logout")}
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <span className="hidden sm:inline">{user?.full_name}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <div className="flex flex-col space-y-1 p-2">
-                    <p className="text-sm font-medium">{user?.full_name}</p>
-                    <p className="text-xs text-muted-foreground">{user?.email}</p>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="md:hidden">
-                    <Link to="/dashboard">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="md:hidden">
-                    <Link to="/courses">
-                      <BookOpen className="mr-2 h-4 w-4" />
-                        {t("nav.courses")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="md:hidden">
-                    <Link to="/chatbot">
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                        {t("nav.ai_chat")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="md:hidden">
-                    <Link to="/youtube-courses">
-                      <Youtube className="mr-2 h-4 w-4" />
-                        {t("nav.video_courses")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="md:hidden">
-                    <Link to="/scholarships">
-                      <Award className="mr-2 h-4 w-4" />
-                        {t("nav.scholarships")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="md:hidden">
-                    <Link to="/voice-chat">
-                      <Radio className="mr-2 h-4 w-4" />
-                        {t("nav.voice_assistant")}
-                    </Link>
-                  </DropdownMenuItem>
-                  {user?.role === "admin" && (
-                    <DropdownMenuItem asChild className="md:hidden">
-                      <Link to="/admin">
-                        <Shield className="mr-2 h-4 w-4" />
-                          {t("nav.admin_panel")}
+                  </SheetContent>
+                </Sheet>
+              </div>
+
+              {/* Desktop - Language, Theme, Profile */}
+              <div className="hidden lg:flex items-center gap-2">
+                <LanguageSwitcher />
+                <ThemeToggle />
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="h-4 w-4 text-primary" />
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="flex flex-col space-y-1 p-2">
+                      <p className="text-sm font-medium">{user?.full_name}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile">
+                        <User className="mr-2 h-4 w-4" />
+                        {t("nav.profile")}
                       </Link>
                     </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator className="md:hidden" />
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile">
-                      <User className="mr-2 h-4 w-4" />
-                      {t("nav.profile")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {t("nav.logout")}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      {t("nav.logout")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </>
           ) : (
             <div className="flex items-center gap-2">
