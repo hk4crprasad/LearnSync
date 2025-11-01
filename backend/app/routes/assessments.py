@@ -41,6 +41,40 @@ async def get_assessment(
     return assessment
 
 
+@router.post("/generate-questions")
+async def generate_questions(
+    request: dict,
+    current_user: dict = Depends(require_teacher)
+):
+    """Generate AI-powered questions for assessment"""
+    try:
+        from app.utils.ai_client import ai_client
+        
+        topic = request.get("topic", "")
+        course_description = request.get("course_description", "")
+        difficulty_level = request.get("difficulty_level", "beginner")
+        num_questions = request.get("num_questions", 5)
+        question_type = request.get("question_type", "multiple_choice")
+        
+        if not topic:
+            raise HTTPException(status_code=400, detail="Topic is required")
+        
+        questions = ai_client.generate_questions(
+            topic=topic,
+            course_description=course_description,
+            difficulty_level=difficulty_level,
+            num_questions=num_questions,
+            question_type=question_type
+        )
+        
+        if not questions:
+            raise HTTPException(status_code=500, detail="Failed to generate questions")
+        
+        return {"questions": questions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating questions: {str(e)}")
+
+
 @router.put("/{assessment_id}", response_model=Assessment)
 async def update_assessment(
     assessment_id: str,

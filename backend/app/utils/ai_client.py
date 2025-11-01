@@ -98,6 +98,107 @@ class AzureOpenAIClient:
             prompt,
             system_prompt="You are a knowledgeable tutor who explains concepts clearly at appropriate difficulty levels."
         )
+    
+    def generate_questions(
+        self, 
+        topic: str, 
+        course_description: str,
+        difficulty_level: str = "beginner",
+        num_questions: int = 5,
+        question_type: str = "multiple_choice"
+    ) -> List[dict]:
+        """Generate assessment questions using AI"""
+        prompt = f"""
+        Generate {num_questions} {question_type} questions for an assessment.
+        
+        Topic: {topic}
+        Course Context: {course_description}
+        Difficulty Level: {difficulty_level}
+        Question Type: {question_type}
+        
+        For each question, provide:
+        1. The question text
+        2. For multiple choice: 4 options (A, B, C, D) with one correct answer
+        3. For true/false: state True or False as the correct answer
+        4. A brief explanation of why the answer is correct
+        5. Points value (based on difficulty: beginner=10, intermediate=15, advanced=20)
+        
+        Return ONLY a valid JSON array with this structure:
+        [
+          {{
+            "question_text": "Question here?",
+            "question_type": "multiple_choice",
+            "options": [
+              {{"text": "Option A", "is_correct": false}},
+              {{"text": "Option B", "is_correct": true}},
+              {{"text": "Option C", "is_correct": false}},
+              {{"text": "Option D", "is_correct": false}}
+            ],
+            "correct_answer": "Option B",
+            "explanation": "Explanation here",
+            "points": 10
+          }}
+        ]
+        
+        For true_false questions, use only two options: True and False.
+        """
+        
+        try:
+            response = self.generate_response(
+                prompt,
+                system_prompt="You are an expert educator creating high-quality assessment questions. Return ONLY valid JSON, no additional text."
+            )
+            
+            # Extract JSON from response
+            import json
+            import re
+            
+            # Try to find JSON array in the response
+            json_match = re.search(r'\[[\s\S]*\]', response)
+            if json_match:
+                questions_json = json_match.group(0)
+                questions = json.loads(questions_json)
+                return questions
+            else:
+                # If no JSON array found, try to parse the entire response
+                questions = json.loads(response)
+                return questions
+                
+        except Exception as e:
+            print(f"Error generating questions: {str(e)}")
+            print(f"AI Response: {response}")
+            return []
+    
+    def adapt_question_difficulty(
+        self,
+        student_performance: dict,
+        topic: str,
+        course_description: str
+    ) -> dict:
+        """Generate adaptive question based on student performance"""
+        avg_score = student_performance.get('avg_score', 50)
+        
+        # Determine difficulty based on performance
+        if avg_score >= 85:
+            difficulty = "advanced"
+        elif avg_score >= 65:
+            difficulty = "intermediate"
+        else:
+            difficulty = "beginner"
+        
+        questions = self.generate_questions(
+            topic=topic,
+            course_description=course_description,
+            difficulty_level=difficulty,
+            num_questions=1
+        )
+        
+        if questions:
+            questions[0]["adaptive_difficulty"] = difficulty
+            questions[0]["based_on_performance"] = avg_score
+            return questions[0]
+        
+        return None
 
 
 # Singleton instance

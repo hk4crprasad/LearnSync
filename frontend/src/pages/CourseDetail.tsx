@@ -208,16 +208,42 @@ const CourseDetail = () => {
             </Card>
 
             {/* Assessments */}
-            {assessments.length > 0 && (
-              <Card className="animate-fade-up" style={{ animationDelay: "100ms" }}>
-                <CardHeader>
-                  <CardTitle>Assessments</CardTitle>
-                  <CardDescription>
-                    Test your knowledge with {assessments.length} assessment{assessments.length > 1 ? 's' : ''}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {assessments.map((assessment) => (
+            <Card className="animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Assessments</CardTitle>
+                    <CardDescription>
+                      {assessments.length > 0 
+                        ? `Test your knowledge with ${assessments.length} assessment${assessments.length > 1 ? 's' : ''}`
+                        : 'No assessments yet'}
+                    </CardDescription>
+                  </div>
+                  {(user?.role === "teacher" || user?.role === "admin") && (
+                    <Button size="sm" asChild variant="outline">
+                      <Link to={`/assessments/create?courseId=${id}`}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Create Assessment
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {assessments.length === 0 ? (
+                  <div className="text-center py-8 border-2 border-dashed rounded-lg">
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <p className="text-muted-foreground">No assessments available yet</p>
+                    {(user?.role === "teacher" || user?.role === "admin") && (
+                      <Button size="sm" className="mt-4" asChild>
+                        <Link to={`/assessments/create?courseId=${id}`}>
+                          Create First Assessment
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  assessments.map((assessment) => (
                     <Card key={assessment.id} className="border-2 hover:border-primary/50 transition-colors">
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between">
@@ -245,10 +271,10 @@ const CourseDetail = () => {
                         </Button>
                       </CardContent>
                     </Card>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
+                  ))
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}

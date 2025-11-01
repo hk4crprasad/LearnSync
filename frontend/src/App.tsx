@@ -16,7 +16,7 @@ import CourseDetail from "./pages/CourseDetail";
 import Profile from "./pages/Profile";
 import Chatbot from "./pages/Chatbot";
 import Admin from "./pages/Admin";
-import CreateAssessment from "./pages/CreateAssessment";
+import CreateAssessment from "./pages/CreateAssessmentV2";
 import CreateCourse from "./pages/CreateCourse";
 import TakeAssessment from "./pages/TakeAssessment";
 import AssessmentResult from "./pages/AssessmentResult";

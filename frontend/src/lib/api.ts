@@ -294,6 +294,19 @@ class ApiClient {
     });
   }
 
+  async generateQuestions(data: {
+    topic: string;
+    course_description: string;
+    difficulty_level: string;
+    num_questions: number;
+    question_type: string;
+  }): Promise<{ questions: Question[] }> {
+    return this.request<{ questions: Question[] }>("/assessments/generate-questions", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
   async updateAssessment(
     assessmentId: string,
     data: Partial<Assessment>
