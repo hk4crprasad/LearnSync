@@ -1,5 +1,5 @@
 [project]
-name = "learnsync"
+name = "backend"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -8,7 +8,7 @@ dependencies = [
     "bcrypt>=5.0.0",
     "beautifulsoup4>=4.14.2",
     "email-validator>=2.3.0",
-    "fastapi>=0.120.0",
+    "fastapi>=0.120.4",
     "firecrawl>=4.5.0",
     "jwt>=1.4.0",
     "motor>=3.7.1",
@@ -18,11 +18,11 @@ dependencies = [
     "pydantic-settings>=2.11.0",
     "pyjwt>=2.10.1",
     "pymongo>=4.15.3",
-    "python-dotenv>=1.1.1",
+    "python-dotenv>=1.2.1",
     "python-jose[cryptography]>=3.5.0",
     "python-multipart>=0.0.20",
     "qdrant-client>=1.15.1",
-    "twilio>=9.8.4",
+    "twilio>=9.8.5",
     "uvicorn[standard]>=0.38.0",
     "websockets>=15.0.1",
 ]

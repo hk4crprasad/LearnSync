@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-import jwt as pyjwt
+try:
+    import PyJWT as jwt
+except ImportError:
+    import jwt
 import bcrypt
 from config import settings
 
@@ -27,7 +30,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire})
-    encoded_jwt = pyjwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     
     return encoded_jwt
 
@@ -35,11 +38,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def decode_access_token(token: str) -> Optional[dict]:
     """Decode JWT access token using PyJWT"""
     try:
-        payload = pyjwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload
-    except pyjwt.InvalidTokenError:
+    except jwt.InvalidTokenError:
         return None
-    except pyjwt.ExpiredSignatureError:
+    except jwt.ExpiredSignatureError:
         return None
     except Exception:
         return None
