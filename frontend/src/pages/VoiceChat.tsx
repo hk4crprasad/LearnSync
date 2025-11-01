@@ -52,12 +52,17 @@ const VoiceChat = () => {
       setCurrentStatus("Connecting to AI voice assistant...");
 
       // Connect to WebSocket - using production API endpoint
-      const wsUrl = "wss://bput-api.tecosys.ai/api/voice/realtime";
+      // Add auth token to URL as query parameter
+      const token = localStorage.getItem("access_token");
+      const wsUrl = `wss://bput-api.tecosys.ai/api/voice/realtime${token ? `?token=${token}` : ''}`;
+      
+      console.log("Connecting to WebSocket:", wsUrl.replace(token || '', 'TOKEN_HIDDEN'));
       
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
+        console.log("WebSocket connected successfully");
         setIsConnected(true);
         setIsConnecting(false);
         setCurrentStatus("Connected - Start speaking!");
@@ -79,14 +84,21 @@ const VoiceChat = () => {
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
-        toast.error("Connection error occurred");
+        toast.error("Connection error occurred. Check console for details.");
         setCurrentStatus("Connection error");
+        setIsConnecting(false);
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
+        console.log("WebSocket closed:", event.code, event.reason);
         setIsConnected(false);
         setCurrentStatus("Disconnected");
-        toast.info("Voice assistant disconnected");
+        setIsConnecting(false);
+        if (event.code !== 1000) {
+          toast.error(`Connection closed: ${event.reason || 'Unknown reason'}`);
+        } else {
+          toast.info("Voice assistant disconnected");
+        }
       };
 
     } catch (error: any) {
