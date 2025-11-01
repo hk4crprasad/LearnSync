@@ -93,7 +93,7 @@ async def handle_media_stream(websocket: WebSocket):
     await websocket.accept()
 
     # Azure OpenAI Realtime API endpoint
-    azure_ws_url = f"wss://cropio.cognitiveservices.azure.com/openai/v1/realtime?model=gpt-realtime&temperature={TEMPERATURE}"
+    azure_ws_url = f"wss://cropi-mhesudjk-eastus2.cognitiveservices.azure.com/openai/v1/realtime?model=gpt-realtime&temperature={TEMPERATURE}"
     
     async with websockets.connect(
         azure_ws_url,
