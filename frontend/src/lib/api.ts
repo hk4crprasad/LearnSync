@@ -510,7 +510,7 @@ class ApiClient {
     });
   }
 
-  // YouTube API methods
+  // Video Courses API methods
   async searchYouTube(
     query: string,
     maxResults: number = 12,

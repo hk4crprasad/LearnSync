@@ -133,7 +133,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* YouTube Courses Quick Action */}
+          {/* Video Courses Quick Action */}
           <Card className="animate-fade-up border-2 border-red-500/20 bg-gradient-to-br from-red-500/5 to-pink-500/5">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -142,7 +142,7 @@ const Dashboard = () => {
                     <Youtube className="h-6 w-6 text-red-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">YouTube Courses</h3>
+                    <h3 className="font-semibold text-lg">Video Courses</h3>
                     <p className="text-sm text-muted-foreground">AI-powered video search</p>
                   </div>
                 </div>

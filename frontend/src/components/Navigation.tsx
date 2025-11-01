@@ -73,7 +73,7 @@ const Navigation = () => {
                 >
                   <Link to="/youtube-courses">
                     <Youtube className="h-4 w-4 mr-2" />
-                    YouTube
+                    Video Courses
                   </Link>
                 </Button>
                 {user?.role === "student" && (
@@ -138,7 +138,7 @@ const Navigation = () => {
                   <DropdownMenuItem asChild className="md:hidden">
                     <Link to="/youtube-courses">
                       <Youtube className="mr-2 h-4 w-4" />
-                      YouTube Courses
+                      Video Courses
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="md:hidden">

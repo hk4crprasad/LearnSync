@@ -86,7 +86,7 @@ const YouTubeCourses = () => {
       setAiKeywords([]);
       toast.success(`Found ${response.total_results} videos`);
     } catch (error: any) {
-      toast.error("Failed to search YouTube");
+      toast.error("Failed to search videos");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -111,9 +111,9 @@ const YouTubeCourses = () => {
       
       setVideos(response.videos);
       setAiKeywords(response.keywords);
-      toast.success(`Found ${response.videos.length} videos using AI-generated keywords`);
+      toast.success(`Found ${response.total_results} videos with AI-generated keywords`);
     } catch (error: any) {
-      toast.error("Failed to search YouTube with AI");
+      toast.error("Failed to search videos with AI");
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -161,7 +161,7 @@ const YouTubeCourses = () => {
           <div className="animate-fade-up">
             <div className="flex items-center gap-3 mb-4">
               <Youtube className="h-10 w-10" />
-              <h1 className="text-3xl sm:text-4xl font-bold">YouTube Learning Hub</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold">Video Courses Hub</h1>
             </div>
             <p className="text-white/90 text-lg">
               Discover educational videos powered by AI keyword generation
@@ -270,7 +270,7 @@ const YouTubeCourses = () => {
                 <div className="space-y-4">
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Search YouTube..."
+                      placeholder="Search for videos..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && handleManualSearch()}
@@ -396,7 +396,7 @@ const YouTubeCourses = () => {
                       onClick={() => openVideo(video.url)}
                     >
                       <Youtube className="mr-2 h-4 w-4" />
-                      Watch on YouTube
+                      Watch Video
                     </Button>
                   </CardContent>
                 </Card>
