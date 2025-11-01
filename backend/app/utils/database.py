@@ -73,3 +73,6 @@ def get_sessions_collection():
 
 def get_chat_sessions_collection():
     return db.get_collection("chat_sessions")
+
+def get_enrollments_collection():
+    return db.get_collection("enrollments")

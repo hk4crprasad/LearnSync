@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List
-from app.schemas.course import Course, CourseCreate, CourseUpdate
+from app.schemas.course import Course, CourseCreate, CourseUpdate, Enrollment
 from app.services.course_service import course_service
 from app.middleware.auth import get_current_user, require_teacher
 
@@ -103,3 +103,64 @@ async def delete_course(
         raise HTTPException(status_code=404, detail="Course not found")
     
     return {"message": "Course deleted successfully"}
+
+
+@router.post("/{course_id}/enroll", response_model=Enrollment, status_code=201)
+async def enroll_in_course(
+    course_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Enroll in a course"""
+    # Check if course exists
+    course = await course_service.get_course_by_id(course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    
+    # Check if already enrolled
+    existing_enrollment = await course_service.get_enrollment(course_id, current_user["id"])
+    if existing_enrollment:
+        raise HTTPException(status_code=400, detail="Already enrolled in this course")
+    
+    # Create enrollment
+    enrollment = await course_service.enroll_student(course_id, current_user["id"])
+    return enrollment
+
+
+@router.get("/{course_id}/enrollment", response_model=Enrollment)
+async def get_enrollment_status(
+    course_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get enrollment status for current user"""
+    enrollment = await course_service.get_enrollment(course_id, current_user["id"])
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Not enrolled in this course")
+    return enrollment
+
+
+@router.get("/enrolled/my-courses", response_model=List[Course])
+async def get_my_enrolled_courses(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+    current_user: dict = Depends(get_current_user)
+):
+    """Get courses the current user is enrolled in"""
+    courses = await course_service.get_enrolled_courses(current_user["id"], skip, limit)
+    return courses
+
+
+@router.delete("/{course_id}/unenroll")
+async def unenroll_from_course(
+    course_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Unenroll from a course"""
+    enrollment = await course_service.get_enrollment(course_id, current_user["id"])
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Not enrolled in this course")
+    
+    success = await course_service.unenroll_student(course_id, current_user["id"])
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to unenroll")
+    
+    return {"message": "Successfully unenrolled from course"}

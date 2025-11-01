@@ -1,0 +1,126 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import Navigation from "@/components/Navigation";
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Courses from "./pages/Courses";
+import CourseDetail from "./pages/CourseDetail";
+import Profile from "./pages/Profile";
+import Chatbot from "./pages/Chatbot";
+import Admin from "./pages/Admin";
+import CreateAssessment from "./pages/CreateAssessment";
+import CreateCourse from "./pages/CreateCourse";
+import TakeAssessment from "./pages/TakeAssessment";
+import AssessmentResult from "./pages/AssessmentResult";
+import NotFound from "./pages/NotFound";
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courses"
+              element={
+                <ProtectedRoute>
+                  <Courses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courses/:id"
+              element={
+                <ProtectedRoute>
+                  <CourseDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chatbot"
+              element={
+                <ProtectedRoute>
+                  <Chatbot />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <Admin />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/create-assessment"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "teacher"]}>
+                  <CreateAssessment />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/create-course"
+              element={
+                <ProtectedRoute allowedRoles={["admin", "teacher"]}>
+                  <CreateCourse />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/assessments/:id/take"
+              element={
+                <ProtectedRoute>
+                  <TakeAssessment />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/assessment-result/:id"
+              element={
+                <ProtectedRoute>
+                  <AssessmentResult />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
+  </QueryClientProvider>
+);
+
+export default App;
