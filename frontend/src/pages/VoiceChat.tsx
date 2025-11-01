@@ -51,9 +51,8 @@ const VoiceChat = () => {
 
       setCurrentStatus("Connecting to AI voice assistant...");
 
-      // Connect to WebSocket
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${protocol}//${window.location.host}/api/voice/realtime`;
+      // Connect to WebSocket - using production API endpoint
+      const wsUrl = "wss://bput-api.tecosys.ai/api/voice/realtime";
       
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
