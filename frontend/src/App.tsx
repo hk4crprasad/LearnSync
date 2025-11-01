@@ -24,6 +24,8 @@ import NotFound from "./pages/NotFound";
 import RoleDashboard from "./pages/RoleDashboard";
 import PracticeAssessment from "./pages/PracticeAssessment";
 import AdaptiveLearning from "./pages/AdaptiveLearning";
+import Scholarships from "./pages/Scholarships";
+import VoiceChat from "./pages/VoiceChat";
 
 const queryClient = new QueryClient();
 
@@ -148,6 +150,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <AdaptiveLearning />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/scholarships"
+              element={
+                <ProtectedRoute>
+                  <Scholarships />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/voice-chat"
+              element={
+                <ProtectedRoute>
+                  <VoiceChat />
                 </ProtectedRoute>
               }
             />

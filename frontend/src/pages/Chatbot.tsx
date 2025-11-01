@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Send, Loader2, Sparkles, Trash2, History, BookOpen, Brain, Lightbulb, Plus, Menu, X } from "lucide-react";
+import { MessageSquare, Send, Loader2, Sparkles, Trash2, History, BookOpen, Brain, Lightbulb, Plus, Menu, X, Radio } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -320,14 +320,23 @@ const Chatbot = () => {
               </div>
             </div>
             
-            <Button 
-              onClick={handleNewChat} 
-              variant="secondary" 
-              className="hidden md:flex"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Chat
-            </Button>
+            <div className="hidden md:flex items-center gap-2">
+              <Button 
+                onClick={() => window.location.href = '/voice-chat'} 
+                variant="secondary" 
+                className="gap-2"
+              >
+                <Radio className="h-4 w-4" />
+                Voice Assistant
+              </Button>
+              <Button 
+                onClick={handleNewChat} 
+                variant="secondary"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Chat
+              </Button>
+            </div>
           </div>
         </div>
       </div>

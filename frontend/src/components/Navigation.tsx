@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, LogOut, User, BookOpen, LayoutDashboard, Shield, MessageSquare, Brain } from "lucide-react";
+import { GraduationCap, LogOut, User, BookOpen, LayoutDashboard, Shield, MessageSquare, Brain, Award, Radio } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -123,6 +123,18 @@ const Navigation = () => {
                     <Link to="/chatbot">
                       <MessageSquare className="mr-2 h-4 w-4" />
                       AI Chat
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="md:hidden">
+                    <Link to="/scholarships">
+                      <Award className="mr-2 h-4 w-4" />
+                      Scholarships
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="md:hidden">
+                    <Link to="/voice-chat">
+                      <Radio className="mr-2 h-4 w-4" />
+                      Voice Assistant
                     </Link>
                   </DropdownMenuItem>
                   {user?.role === "admin" && (

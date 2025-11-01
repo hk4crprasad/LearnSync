@@ -63,7 +63,7 @@ const Dashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 gap-4 mb-6">
+        <div className="grid md:grid-cols-3 gap-4 mb-6">
           {/* AI Practice Quick Action */}
           <Card className="animate-fade-up border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
             <CardContent className="pt-6">
@@ -104,6 +104,29 @@ const Dashboard = () => {
                   <Button variant="outline" className="gap-2 border-blue-500/50">
                     <TrendingUp className="h-4 w-4" />
                     View Plan
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Scholarships Quick Action */}
+          <Card className="animate-fade-up border-2 border-green-500/20 bg-gradient-to-br from-green-500/5 to-emerald-500/5">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <Award className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Scholarships</h3>
+                    <p className="text-sm text-muted-foreground">Find financial aid opportunities</p>
+                  </div>
+                </div>
+                <Link to="/scholarships">
+                  <Button variant="outline" className="gap-2 border-green-500/50">
+                    <Award className="h-4 w-4" />
+                    Explore
                   </Button>
                 </Link>
               </div>

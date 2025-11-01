@@ -341,3 +341,105 @@ async def initialize_session(openai_ws):
     
     print('🔧 Initializing AI voice session')
     await openai_ws.send(json.dumps(session_update))
+
+
+@router.websocket("/realtime")
+async def handle_realtime_voice(websocket: WebSocket):
+    """
+    WebSocket endpoint for browser-based realtime voice chat.
+    Used for accessibility features (screen readers, voice navigation).
+    """
+    print("🎤 Browser voice chat connected")
+    await websocket.accept()
+
+    # Azure OpenAI Realtime API endpoint
+    azure_ws_url = f"wss://tecoss.openai.azure.com/openai/v1/realtime?model=gpt-realtime&temperature={TEMPERATURE}"
+
+    try:
+        async with websockets.connect(
+            azure_ws_url,
+            additional_headers={
+                "api-key": settings.AZURE_OPENAI_API_KEY
+            }
+        ) as openai_ws:
+            # Initialize session with PCM16 for browser compatibility
+            session_update = {
+                "type": "session.update",
+                "session": {
+                    "model": "gpt-realtime",
+                    "modalities": ["text", "audio"],
+                    "voice": VOICE,
+                    "input_audio_format": "pcm16",
+                    "output_audio_format": "pcm16",
+                    "input_audio_transcription": {
+                        "model": "whisper-1"
+                    },
+                    "turn_detection": {
+                        "type": "server_vad",
+                        "threshold": 0.5,
+                        "prefix_padding_ms": 300,
+                        "silence_duration_ms": 500
+                    },
+                    "instructions": SYSTEM_MESSAGE,
+                    "temperature": TEMPERATURE,
+                }
+            }
+            
+            print('🔧 Initializing browser voice session')
+            await openai_ws.send(json.dumps(session_update))
+
+            async def receive_from_browser():
+                """Receive audio from browser and forward to OpenAI"""
+                try:
+                    async for message in websocket.iter_text():
+                        data = json.loads(message)
+                        
+                        if data['type'] == 'input_audio':
+                            # Forward audio to OpenAI
+                            audio_append = {
+                                "type": "input_audio_buffer.append",
+                                "audio": data['audio']
+                            }
+                            await openai_ws.send(json.dumps(audio_append))
+                        
+                        elif data['type'] == 'commit_audio':
+                            # Commit the audio buffer
+                            await openai_ws.send(json.dumps({
+                                "type": "input_audio_buffer.commit"
+                            }))
+                        
+                        elif data['type'] == 'cancel':
+                            # Cancel current response
+                            await openai_ws.send(json.dumps({
+                                "type": "response.cancel"
+                            }))
+                            
+                except WebSocketDisconnect:
+                    print("🎤 Browser disconnected")
+                except Exception as e:
+                    print(f"❌ Error receiving from browser: {e}")
+
+            async def send_to_browser():
+                """Receive events from OpenAI and forward to browser"""
+                try:
+                    async for openai_message in openai_ws:
+                        response = json.loads(openai_message)
+                        
+                        # Forward all events to browser
+                        await websocket.send_text(json.dumps(response))
+                        
+                        if response['type'] in LOG_EVENT_TYPES:
+                            print(f"🤖 AI Event: {response['type']}")
+                            
+                except Exception as e:
+                    print(f"❌ Error sending to browser: {e}")
+
+            # Run both tasks concurrently
+            await asyncio.gather(receive_from_browser(), send_to_browser())
+            
+    except websockets.exceptions.WebSocketException as e:
+        print(f"❌ WebSocket error: {e}")
+        await websocket.close(code=1011, reason="OpenAI connection failed")
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        await websocket.close(code=1011, reason="Internal server error")
