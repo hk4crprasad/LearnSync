@@ -56,10 +56,15 @@ const VoiceChat = () => {
       const token = localStorage.getItem("access_token");
       const wsUrl = `wss://bput-api.tecosys.ai/api/voice/realtime${token ? `?token=${token}` : ''}`;
       
-      console.log("Connecting to WebSocket:", wsUrl.replace(token || '', 'TOKEN_HIDDEN'));
+      console.log("🔌 Attempting WebSocket connection...");
+      console.log("   URL:", wsUrl.replace(token || '', 'TOKEN_HIDDEN'));
+      console.log("   Protocol:", "WebSocket (wss://)");
+      console.log("   Ready state before:", "CONNECTING (0)");
       
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
+      
+      console.log("   WebSocket object created, ready state:", ws.readyState);
 
       ws.onopen = () => {
         console.log("WebSocket connected successfully");

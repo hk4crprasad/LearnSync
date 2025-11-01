@@ -52,7 +52,23 @@ async def voice_status():
     return {
         "message": "LearnSync Voice Assistant is running!",
         "status": "active",
-        "features": ["Twilio Integration", "OpenAI Realtime API", "Educational Tutoring"]
+        "features": ["Twilio Integration", "OpenAI Realtime API", "Educational Tutoring"],
+        "endpoints": {
+            "status": "/api/voice/",
+            "incoming_call": "/api/voice/incoming-call",
+            "media_stream": "/api/voice/media-stream (WebSocket)",
+            "realtime": "/api/voice/realtime (WebSocket)"
+        }
+    }
+
+
+@router.get("/test-realtime")
+async def test_realtime():
+    """Test endpoint to verify realtime route is accessible"""
+    return {
+        "message": "Realtime WebSocket endpoint is available",
+        "websocket_url": "wss://bput-api.tecosys.ai/api/voice/realtime",
+        "note": "Connect using WebSocket protocol, not HTTP"
     }
 
 
@@ -349,8 +365,16 @@ async def handle_realtime_voice(websocket: WebSocket):
     WebSocket endpoint for browser-based realtime voice chat.
     Used for accessibility features (screen readers, voice navigation).
     """
-    print("🎤 Browser voice chat connected")
-    await websocket.accept()
+    print("🎤 Browser voice chat connection attempt")
+    print(f"   Headers: {websocket.headers}")
+    print(f"   Query params: {websocket.query_params}")
+    
+    try:
+        await websocket.accept()
+        print("✅ WebSocket connection accepted")
+    except Exception as e:
+        print(f"❌ Failed to accept WebSocket: {e}")
+        raise
 
     # Azure OpenAI Realtime API endpoint
     azure_ws_url = f"wss://tecoss.openai.azure.com/openai/v1/realtime?model=gpt-realtime&temperature={TEMPERATURE}"
