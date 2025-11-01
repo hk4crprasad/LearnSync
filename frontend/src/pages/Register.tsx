@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, GraduationCap } from "lucide-react";
+import { Loader2, GraduationCap, UserCircle, BookOpen, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -21,6 +22,7 @@ const Register = () => {
     state: "",
     goals: "",
   });
+  const [selectedRole, setSelectedRole] = useState<"student" | "teacher" | "admin">("student");
   const [interests, setInterests] = useState<string[]>([]);
   const [interestInput, setInterestInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +36,7 @@ const Register = () => {
     try {
       await register({
         ...formData,
-        role: "student",
+        role: selectedRole,
         interests,
         learning_preferences: ["visual", "interactive"],
       });
@@ -75,6 +77,54 @@ const Register = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <Label>I want to register as</Label>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  type="button"
+                  variant={selectedRole === "student" ? "default" : "outline"}
+                  className={cn(
+                    "flex flex-col items-center justify-center h-20 gap-1",
+                    selectedRole === "student" && "ring-2 ring-primary"
+                  )}
+                  onClick={() => setSelectedRole("student")}
+                  disabled={isLoading}
+                >
+                  <UserCircle className="h-5 w-5" />
+                  <span className="text-xs">Student</span>
+                </Button>
+                
+                <Button
+                  type="button"
+                  variant={selectedRole === "teacher" ? "default" : "outline"}
+                  className={cn(
+                    "flex flex-col items-center justify-center h-20 gap-1",
+                    selectedRole === "teacher" && "ring-2 ring-primary"
+                  )}
+                  onClick={() => setSelectedRole("teacher")}
+                  disabled={isLoading}
+                >
+                  <BookOpen className="h-5 w-5" />
+                  <span className="text-xs">Teacher</span>
+                </Button>
+                
+                <Button
+                  type="button"
+                  variant={selectedRole === "admin" ? "default" : "outline"}
+                  className={cn(
+                    "flex flex-col items-center justify-center h-20 gap-1",
+                    selectedRole === "admin" && "ring-2 ring-primary"
+                  )}
+                  onClick={() => setSelectedRole("admin")}
+                  disabled={isLoading}
+                >
+                  <Shield className="h-5 w-5" />
+                  <span className="text-xs">Admin</span>
+                </Button>
+              </div>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="full_name">Full Name *</Label>

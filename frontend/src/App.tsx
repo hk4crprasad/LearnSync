@@ -10,6 +10,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import TeacherDashboard from "./pages/TeacherDashboard";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
 import Profile from "./pages/Profile";
@@ -20,6 +21,7 @@ import CreateCourse from "./pages/CreateCourse";
 import TakeAssessment from "./pages/TakeAssessment";
 import AssessmentResult from "./pages/AssessmentResult";
 import NotFound from "./pages/NotFound";
+import RoleDashboard from "./pages/RoleDashboard";
 
 const queryClient = new QueryClient();
 
@@ -39,7 +41,7 @@ const App = () => (
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <RoleDashboard />
                 </ProtectedRoute>
               }
             />

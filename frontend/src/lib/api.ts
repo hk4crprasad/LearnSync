@@ -4,7 +4,7 @@ export interface User {
   id: string;
   email: string;
   full_name: string;
-  role: "student" | "admin";
+  role: "student" | "teacher" | "admin";
   college_name?: string;
   class_grade?: string;
   major_subject?: string;
@@ -129,7 +129,7 @@ class ApiClient {
     email: string;
     full_name: string;
     password: string;
-    role: "student" | "admin";
+    role: "student" | "teacher" | "admin";
     college_name?: string;
     class_grade?: string;
     major_subject?: string;
