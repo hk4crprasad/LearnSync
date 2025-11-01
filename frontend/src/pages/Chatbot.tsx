@@ -244,34 +244,52 @@ const Chatbot = () => {
                 const data = JSON.parse(line.slice(6));
                 
                 if (data.error) {
+                  console.error("Stream error:", data.error);
                   throw new Error(data.error);
                 }
                 
-                if (data.chunk) {
+                if (data.chunk !== undefined) {
                   fullResponse += data.chunk;
                   
                   // Update the streaming message
                   setMessages(prev => {
                     const newMessages = [...prev];
                     const lastMsg = newMessages[newMessages.length - 1];
-                    if (lastMsg.role === "assistant") {
-                      lastMsg.content = fullResponse;
+                    if (lastMsg && lastMsg.role === "assistant") {
+                      lastMsg.content = fullResponse || "...";
                       lastMsg.isStreaming = !data.done;
                     }
                     return newMessages;
                   });
                 }
                 
-                if (data.done && data.session_id) {
-                  setSessionId(data.session_id);
-                  loadChatSessions();
+                if (data.done) {
+                  if (data.session_id) {
+                    setSessionId(data.session_id);
+                    loadChatSessions();
+                  }
+                  // Ensure message is no longer streaming
+                  setMessages(prev => {
+                    const newMessages = [...prev];
+                    const lastMsg = newMessages[newMessages.length - 1];
+                    if (lastMsg && lastMsg.role === "assistant") {
+                      lastMsg.isStreaming = false;
+                    }
+                    return newMessages;
+                  });
                 }
               } catch (e) {
+                console.warn("Failed to parse SSE line:", line, e);
                 // Skip invalid JSON lines
               }
             }
           }
         }
+      }
+      
+      // Ensure we got a response
+      if (!fullResponse.trim()) {
+        throw new Error("No response received from AI");
       }
       
       toast.success("Response received!");
