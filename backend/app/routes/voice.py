@@ -6,7 +6,7 @@ import websockets
 from fastapi import WebSocket, Request, APIRouter
 from fastapi.responses import HTMLResponse
 from fastapi.websockets import WebSocketDisconnect
-from twilio.twiml.voice_response import VoiceResponse, Connect
+from twilio.twiml.voice_response import VoiceResponse, Connect, Hangup
 from config import settings
 
 router = APIRouter(prefix="/api/voice", tags=["Voice Assistant"])
@@ -92,13 +92,15 @@ async def handle_media_stream(websocket: WebSocket):
     print("📞 Voice call connected")
     await websocket.accept()
 
-    # Azure OpenAI Realtime API endpoint
-    azure_ws_url = f"wss://cropi-mhesudjk-eastus2.cognitiveservices.azure.com/openai/v1/realtime?model=gpt-realtime&temperature={TEMPERATURE}"
-    
+    # Azure OpenAI Realtime API endpoint (use configured endpoint to avoid redirects)
+    # settings.AZURE_OPENAI_ENDPOINT should be the host (e.g. "your-resource-name.cognitiveservices.azure.com")
+    azure_ws_url = f"wss://tecoss.openai.azure.com/openai/v1/realtime?model=gpt-realtime&temperature={TEMPERATURE}"
+
     async with websockets.connect(
         azure_ws_url,
         additional_headers={
-            "Authorization": f"Bearer {settings.AZURE_OPENAI_API_KEY}"
+            # Azure OpenAI requires the api-key header for most realtime websocket connections
+            "api-key": settings.AZURE_OPENAI_API_KEY
         }
     ) as openai_ws:
         await initialize_session(openai_ws)
@@ -110,6 +112,26 @@ async def handle_media_stream(websocket: WebSocket):
         mark_queue = []
         response_start_timestamp_twilio = None
         call_should_end = False
+        hangup_initiated = False
+
+        def log_hangup_twiml() -> None:
+            """Log the TwiML response used to terminate a call."""
+            hangup_response = VoiceResponse()
+            hangup_response.append(Hangup())
+            print(hangup_response)
+
+        def text_contains_call_end_keyword(text: str) -> bool:
+            """Check whether the provided text includes any call-end keyword."""
+            normalized_text = (text or "").lower()
+            return any(keyword in normalized_text for keyword in CALL_END_KEYWORDS)
+
+        def initiate_call_termination(reason: str) -> None:
+            nonlocal call_should_end, hangup_initiated
+            call_should_end = True
+            if not hangup_initiated:
+                print(f"📴 {reason}")
+                log_hangup_twiml()
+                hangup_initiated = True
         
         async def receive_from_twilio():
             """Receive audio data from Twilio and send it to Azure OpenAI."""
@@ -168,19 +190,34 @@ async def handle_media_stream(websocket: WebSocket):
                         if response['type'] == 'error':
                             print(f"❌ OpenAI Error: {response.get('error', {})}")
 
-                    # Check for transcript in response (if available)
+                    # Check for conversation items (transcripts/messages). We need to watch user speech for hangup keywords.
                     if response.get('type') == 'conversation.item.created':
                         item = response.get('item', {})
-                        if item.get('type') == 'message' and item.get('role') == 'assistant':
-                            # Check message content for goodbye
+                        if item.get('type') == 'message':
+                            role = item.get('role')
                             content = item.get('content', [])
-                            for c in content:
-                                if c.get('type') == 'text':
-                                    text = c.get('text', '').lower()
-                                    print(f"🤖 AI Response Text: {text}")
-                                    if any(keyword in text for keyword in ['goodbye', 'bye', 'call_end_requested', 'end the call']):
-                                        print("📞 Detected goodbye - will end call after audio finishes")
-                                        call_should_end = True
+                            # If the user spoke and the transcript is available, inspect it for hangup keywords
+                            if role == 'user':
+                                for c in content:
+                                    # transcripts may appear under types like 'input_transcript' or 'text'
+                                    if c.get('type') in ('input_transcript', 'transcript', 'text'):
+                                        candidate = c.get('text', '')
+                                        if candidate:
+                                            print(f"🗣️ User transcript: {candidate}")
+                                            if text_contains_call_end_keyword(candidate):
+                                                initiate_call_termination("User requested hangup via speech transcript")
+                                                # close the websocket and exit
+                                                await websocket.close()
+                                                return
+                            elif role == 'assistant':
+                                # Keep existing assistant detection (if assistant says goodbye)
+                                for c in content:
+                                    if c.get('type') == 'text':
+                                        text = c.get('text', '')
+                                        normalized_text = text.lower()
+                                        print(f"🤖 AI Response Text: {normalized_text}")
+                                        if text_contains_call_end_keyword(text) or any(keyword in normalized_text for keyword in ['goodbye', 'bye', 'call_end_requested', 'end the call']):
+                                            initiate_call_termination("Assistant message included hangup keyword")
                     
                     # Check response text deltas
                     if response.get('type') == 'response.text.delta':
