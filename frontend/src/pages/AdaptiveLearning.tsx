@@ -65,7 +65,7 @@ const AdaptiveLearning = () => {
   const loadStudyPlan = async () => {
     setLoading(true);
     try {
-      const data = await api.get<StudyPlan>("/api/analytics/adaptive/study-plan");
+      const data = await api.getPersonalizedStudyPlan();
       setStudyPlan(data);
     } catch (error: any) {
       toast.error(error.message || "Failed to load study plan");
