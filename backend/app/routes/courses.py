@@ -54,6 +54,17 @@ async def get_teacher_courses(
     return courses
 
 
+@router.get("/enrolled/my-courses", response_model=List[Course])
+async def get_my_enrolled_courses(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+    current_user: dict = Depends(get_current_user)
+):
+    """Get courses the current user is enrolled in"""
+    courses = await course_service.get_enrolled_courses(current_user["id"], skip, limit)
+    return courses
+
+
 @router.get("/{course_id}", response_model=Course)
 async def get_course(
     course_id: str,
@@ -136,17 +147,6 @@ async def get_enrollment_status(
     if not enrollment:
         raise HTTPException(status_code=404, detail="Not enrolled in this course")
     return enrollment
-
-
-@router.get("/enrolled/my-courses", response_model=List[Course])
-async def get_my_enrolled_courses(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
-    current_user: dict = Depends(get_current_user)
-):
-    """Get courses the current user is enrolled in"""
-    courses = await course_service.get_enrolled_courses(current_user["id"], skip, limit)
-    return courses
 
 
 @router.delete("/{course_id}/unenroll")

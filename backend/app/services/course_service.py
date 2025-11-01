@@ -24,8 +24,12 @@ class CourseService:
     
     async def get_course_by_id(self, course_id: str) -> Optional[dict]:
         """Get course by ID"""
-        course = await self.collection.find_one({"_id": ObjectId(course_id)})
-        return serialize_doc(course) if course else None
+        try:
+            course = await self.collection.find_one({"_id": ObjectId(course_id)})
+            return serialize_doc(course) if course else None
+        except Exception:
+            # Invalid ObjectId format
+            return None
     
     async def get_all_courses(self, skip: int = 0, limit: int = 100) -> List[dict]:
         """Get all courses"""
