@@ -639,14 +639,54 @@ const YouTubeCourses = () => {
           </CardContent>
         </Card>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center space-y-4">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                <p className="text-lg font-semibold">Searching for amazing content...</p>
+                <p className="text-sm text-muted-foreground">AI is finding the best videos for you 🎯</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="overflow-hidden animate-pulse">
+                  <div className="aspect-video bg-muted" />
+                  <CardHeader>
+                    <div className="h-4 bg-muted rounded w-3/4 mb-2" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-muted rounded" />
+                      <div className="h-3 bg-muted rounded w-5/6" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Results */}
-        {videos.length > 0 ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">
-                Found {videos.length} Educational Videos
-              </h2>
-              <Badge variant="outline">{activeTab === "ai" ? "AI-Powered" : "Manual Search"}</Badge>
+        {!isLoading && videos.length > 0 ? (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Trophy className="h-6 w-6 text-yellow-500" />
+                  Found {videos.length} Educational Videos
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Click on any video to start learning 📚
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                  {activeTab === "ai" ? "🤖 AI-Powered" : "🔍 Manual Search"}
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -771,13 +811,42 @@ const YouTubeCourses = () => {
           </div>
         ) : (
           !isLoading && (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold mb-2">No videos found</h3>
-                <p className="text-muted-foreground text-center max-w-md">
-                  Try searching for a topic or use AI-powered search to discover educational content
+            <Card className="border-2 border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl" />
+                  <BookOpen className="h-20 w-20 text-primary relative animate-pulse" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                  Start Your Learning Journey! 🚀
+                </h3>
+                <p className="text-muted-foreground text-center max-w-md mb-6 leading-relaxed">
+                  Search for any topic you want to learn. Our AI will help you find the best educational videos tailored to your level!
                 </p>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery("Python Programming");
+                      setActiveTab("ai");
+                    }}
+                  >
+                    <Zap className="mr-2 h-4 w-4" />
+                    Try Python
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery("Machine Learning");
+                      setActiveTab("ai");
+                    }}
+                  >
+                    <Award className="mr-2 h-4 w-4" />
+                    Try Machine Learning
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )
