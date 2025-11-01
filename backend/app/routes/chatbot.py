@@ -55,19 +55,36 @@ async def ask_chatbot_stream(
     
     async def generate_stream():
         try:
+            print(f"🔄 Starting stream for student: {chat_request.student_id}")
+            
             # Get chat history for context
             context = await chatbot_service.get_context(chat_request.student_id, chat_request.session_id)
+            print(f"📜 Context loaded: {len(context)} messages")
             
             # Create the streaming prompt
             messages = context + [{"role": "user", "content": chat_request.message}]
             
             # Stream from OpenAI
             full_response = ""
-            async for chunk in ai_client.stream_chat(messages):
-                if chunk:
-                    full_response += chunk
-                    # Send as JSON for easier parsing in frontend
-                    yield f"data: {json.dumps({'chunk': chunk, 'done': False})}\n\n"
+            chunk_count = 0
+            
+            try:
+                async for chunk in ai_client.stream_chat(messages):
+                    if chunk:
+                        full_response += chunk
+                        chunk_count += 1
+                        # Send as JSON for easier parsing in frontend
+                        yield f"data: {json.dumps({'chunk': chunk, 'done': False})}\n\n"
+            except Exception as stream_error:
+                print(f"⚠️ Streaming error, falling back to regular response: {str(stream_error)}")
+                # Fallback to non-streaming if streaming fails
+                full_response = ai_client.generate_response(
+                    chat_request.message,
+                    conversation_history=[msg for msg in context if msg.get("role") != "system"]
+                )
+                yield f"data: {json.dumps({'chunk': full_response, 'done': False})}\n\n"
+            
+            print(f"✅ Stream complete: {chunk_count} chunks, {len(full_response)} characters")
             
             # Save the complete conversation
             session_id = await chatbot_service.save_chat_message(
@@ -77,10 +94,15 @@ async def ask_chatbot_stream(
                 assistant_message=full_response
             )
             
+            print(f"💾 Conversation saved to session: {session_id}")
+            
             # Send final message with session_id
             yield f"data: {json.dumps({'chunk': '', 'done': True, 'session_id': session_id})}\n\n"
             
         except Exception as e:
+            print(f"❌ Stream error: {str(e)}")
+            import traceback
+            traceback.print_exc()
             yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
     
     return StreamingResponse(

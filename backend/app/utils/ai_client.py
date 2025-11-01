@@ -48,8 +48,11 @@ class AzureOpenAIClient:
             )
             
             for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    yield chunk.choices[0].delta.content
+                # Check if choices exist and have content
+                if chunk.choices and len(chunk.choices) > 0:
+                    delta = chunk.choices[0].delta
+                    if delta and hasattr(delta, 'content') and delta.content:
+                        yield delta.content
                     
         except Exception as e:
             print(f"Error streaming AI response: {str(e)}")
