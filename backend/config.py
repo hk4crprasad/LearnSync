@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     AZURE_OPENAI_MODEL: str = "gpt-5-chat"
     AZURE_OPENAI_DEPLOYMENT: str = "gpt-5-chat"
     
+    # YouTube API Configuration
+    YOUTUBE_API_KEY: Optional[str] = None
+    
     # Application Configuration
     APP_NAME: str = "LearnSync"
     APP_VERSION: str = "1.0.0"

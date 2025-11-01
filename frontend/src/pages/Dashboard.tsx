@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { api, Course, Recommendations } from "@/lib/api";
-import { BookOpen, TrendingUp, Award, Sparkles, Loader2, ArrowRight } from "lucide-react";
+import { BookOpen, TrendingUp, Award, Sparkles, Loader2, ArrowRight, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -63,7 +63,7 @@ const Dashboard = () => {
 
       <div className="container mx-auto px-4 py-8">
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-4 mb-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {/* AI Practice Quick Action */}
           <Card className="animate-fade-up border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
             <CardContent className="pt-6">
@@ -127,6 +127,29 @@ const Dashboard = () => {
                   <Button variant="outline" className="gap-2 border-green-500/50">
                     <Award className="h-4 w-4" />
                     Explore
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* YouTube Courses Quick Action */}
+          <Card className="animate-fade-up border-2 border-red-500/20 bg-gradient-to-br from-red-500/5 to-pink-500/5">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                    <Youtube className="h-6 w-6 text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">YouTube Courses</h3>
+                    <p className="text-sm text-muted-foreground">AI-powered video search</p>
+                  </div>
+                </div>
+                <Link to="/youtube-courses">
+                  <Button variant="outline" className="gap-2 border-red-500/50">
+                    <Youtube className="h-4 w-4" />
+                    Discover
                   </Button>
                 </Link>
               </div>

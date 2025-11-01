@@ -26,6 +26,7 @@ import PracticeAssessment from "./pages/PracticeAssessment";
 import AdaptiveLearning from "./pages/AdaptiveLearning";
 import Scholarships from "./pages/Scholarships";
 import VoiceChat from "./pages/VoiceChat";
+import YouTubeCourses from "./pages/YouTubeCourses";
 
 const queryClient = new QueryClient();
 
@@ -166,6 +167,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <VoiceChat />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/youtube-courses"
+              element={
+                <ProtectedRoute>
+                  <YouTubeCourses />
                 </ProtectedRoute>
               }
             />

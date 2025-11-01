@@ -509,6 +509,63 @@ class ApiClient {
       body: JSON.stringify({ question, student_answer, is_correct }),
     });
   }
+
+  // YouTube API methods
+  async searchYouTube(
+    query: string,
+    maxResults: number = 12,
+    order: string = "relevance",
+    duration?: string
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      q: query,
+      max_results: maxResults.toString(),
+      order,
+    });
+    if (duration) params.append("duration", duration);
+    
+    return this.request(`/youtube/search?${params}`);
+  }
+
+  async aiSearchYouTube(
+    topic: string,
+    userContext?: string,
+    maxResults: number = 12
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      max_results: maxResults.toString(),
+    });
+    
+    return this.request(`/youtube/ai-search?${params}`, {
+      method: "POST",
+      body: JSON.stringify({ topic, user_context: userContext }),
+    });
+  }
+
+  async generateYouTubeKeywords(
+    topic: string,
+    userContext?: string
+  ): Promise<{ topic: string; keywords: string[]; message: string }> {
+    return this.request("/youtube/generate-keywords", {
+      method: "POST",
+      body: JSON.stringify({ topic, user_context: userContext }),
+    });
+  }
+
+  async getYouTubeCourseSuggestions(
+    topic: string,
+    level: string = "beginner"
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      topic,
+      level,
+    });
+    return this.request(`/youtube/course-suggestions?${params}`);
+  }
+
+  async getYouTubeChannelInfo(channelId: string): Promise<any> {
+    return this.request(`/youtube/channel/${channelId}`);
+  }
 }
 
 export const api = new ApiClient(API_BASE_URL);

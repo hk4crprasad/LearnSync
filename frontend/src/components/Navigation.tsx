@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, LogOut, User, BookOpen, LayoutDashboard, Shield, MessageSquare, Brain, Award, Radio } from "lucide-react";
+import { GraduationCap, LogOut, User, BookOpen, LayoutDashboard, Shield, MessageSquare, Brain, Award, Radio, Youtube } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,6 +66,16 @@ const Navigation = () => {
                     AI Chat
                   </Link>
                 </Button>
+                <Button
+                  variant={isActive("/youtube-courses") ? "default" : "ghost"}
+                  asChild
+                  size="sm"
+                >
+                  <Link to="/youtube-courses">
+                    <Youtube className="h-4 w-4 mr-2" />
+                    YouTube
+                  </Link>
+                </Button>
                 {user?.role === "student" && (
                   <Button
                     variant={isActive("/adaptive-learning") ? "default" : "ghost"}
@@ -123,6 +133,12 @@ const Navigation = () => {
                     <Link to="/chatbot">
                       <MessageSquare className="mr-2 h-4 w-4" />
                       AI Chat
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="md:hidden">
+                    <Link to="/youtube-courses">
+                      <Youtube className="mr-2 h-4 w-4" />
+                      YouTube Courses
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="md:hidden">
