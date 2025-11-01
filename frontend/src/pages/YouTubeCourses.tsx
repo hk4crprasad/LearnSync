@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,17 @@ import {
   Clock,
   Filter,
   BookOpen,
-  TrendingUp
+  TrendingUp,
+  Star,
+  Award,
+  Flame,
+  Zap,
+  Trophy,
+  Target,
+  PlayCircle,
+  Heart,
+  Share2,
+  Bookmark
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -26,6 +36,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
+
+// Add animations styles
+const styles = `
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+`;
 
 interface YouTubeVideo {
   id: string;
@@ -53,6 +87,38 @@ const YouTubeCourses = () => {
   const [sortOrder, setSortOrder] = useState("relevance");
   const [duration, setDuration] = useState<string>("");
   const [learningLevel, setLearningLevel] = useState("beginner");
+  
+  // Gamification states
+  const [videosWatched, setVideosWatched] = useState(0);
+  const [searchStreak, setSearchStreak] = useState(1);
+  const [savedVideos, setSavedVideos] = useState<Set<string>>(new Set());
+  const [likedVideos, setLikedVideos] = useState<Set<string>>(new Set());
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  // Load gamification data from localStorage
+  useEffect(() => {
+    const watched = localStorage.getItem("yt_videos_watched");
+    const streak = localStorage.getItem("yt_search_streak");
+    const saved = localStorage.getItem("yt_saved_videos");
+    const liked = localStorage.getItem("yt_liked_videos");
+    
+    if (watched) setVideosWatched(parseInt(watched));
+    if (streak) setSearchStreak(parseInt(streak));
+    if (saved) setSavedVideos(new Set(JSON.parse(saved)));
+    if (liked) setLikedVideos(new Set(JSON.parse(liked)));
+  }, []);
+
+  // Save gamification data
+  const saveGamificationData = () => {
+    localStorage.setItem("yt_videos_watched", videosWatched.toString());
+    localStorage.setItem("yt_search_streak", searchStreak.toString());
+    localStorage.setItem("yt_saved_videos", JSON.stringify(Array.from(savedVideos)));
+    localStorage.setItem("yt_liked_videos", JSON.stringify(Array.from(likedVideos)));
+  };
+
+  useEffect(() => {
+    saveGamificationData();
+  }, [videosWatched, searchStreak, savedVideos, likedVideos]);
 
   const formatNumber = (num: number): string => {
     if (num >= 1000000) {
@@ -84,6 +150,15 @@ const YouTubeCourses = () => {
       );
       setVideos(response.videos);
       setAiKeywords([]);
+      
+      // Gamification: Increase search streak
+      setSearchStreak(prev => prev + 1);
+      if (searchStreak > 0 && searchStreak % 5 === 0) {
+        toast.success(`🔥 ${searchStreak} search streak! You're on fire!`, {
+          duration: 3000,
+        });
+      }
+      
       toast.success(`Found ${response.total_results} videos`);
     } catch (error: any) {
       toast.error("Failed to search videos");
@@ -111,7 +186,18 @@ const YouTubeCourses = () => {
       
       setVideos(response.videos);
       setAiKeywords(response.keywords);
-      toast.success(`Found ${response.total_results} videos with AI-generated keywords`);
+      
+      // Gamification: Increase search streak
+      setSearchStreak(prev => prev + 1);
+      if (searchStreak > 0 && searchStreak % 5 === 0) {
+        toast.success(`⚡ ${searchStreak} AI searches! You're a learning champion!`, {
+          duration: 3000,
+        });
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
+      }
+      
+      toast.success(`🎯 Found ${response.total_results} videos with AI-generated keywords`);
     } catch (error: any) {
       toast.error("Failed to search videos with AI");
       console.error(error);
@@ -149,37 +235,220 @@ const YouTubeCourses = () => {
     }
   };
 
-  const openVideo = (url: string) => {
+  const openVideo = (url: string, videoId: string) => {
     window.open(url, "_blank");
+    
+    // Gamification: Track videos watched
+    setVideosWatched(prev => prev + 1);
+    
+    // Show achievement at milestones
+    if ((videosWatched + 1) % 10 === 0) {
+      toast.success(`🏆 ${videosWatched + 1} videos watched! Keep learning!`, {
+        duration: 4000,
+      });
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
+    }
+  };
+
+  const toggleSaveVideo = (videoId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSavedVideos(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(videoId)) {
+        newSet.delete(videoId);
+        toast.info("Video removed from saved");
+      } else {
+        newSet.add(videoId);
+        toast.success("✅ Video saved for later!");
+      }
+      return newSet;
+    });
+  };
+
+  const toggleLikeVideo = (videoId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLikedVideos(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(videoId)) {
+        newSet.delete(videoId);
+        toast.info("Like removed");
+      } else {
+        newSet.add(videoId);
+        toast.success("❤️ Liked!");
+      }
+      return newSet;
+    });
+  };
+
+  const shareVideo = (video: YouTubeVideo, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (navigator.share) {
+      navigator.share({
+        title: video.title,
+        text: `Check out this educational video: ${video.title}`,
+        url: video.url,
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(video.url);
+      toast.success("📋 Link copied to clipboard!");
+    }
+  };
+
+  const getProgressToNextLevel = () => {
+    const nextMilestone = Math.ceil(videosWatched / 10) * 10;
+    return ((videosWatched % 10) / 10) * 100;
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-red-600 to-pink-600 text-white">
-        <div className="container mx-auto px-4 py-12">
-          <div className="animate-fade-up">
-            <div className="flex items-center gap-3 mb-4">
-              <Youtube className="h-10 w-10" />
-              <h1 className="text-3xl sm:text-4xl font-bold">Video Courses Hub</h1>
+    <>
+      <style>{styles}</style>
+      <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+        {/* Confetti Effect */}
+        {showConfetti && (
+          <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+            <div className="text-6xl animate-bounce">🎉</div>
+            <div className="text-4xl absolute top-20 left-20 animate-ping">⭐</div>
+            <div className="text-4xl absolute bottom-20 right-20 animate-ping delay-100">✨</div>
+            <div className="text-5xl absolute top-40 right-40 animate-bounce delay-200">🏆</div>
+          </div>
+        )}
+
+      {/* Header with Gamification */}
+      <div className="bg-gradient-to-r from-red-600 via-pink-600 to-purple-600 text-white relative overflow-hidden">
+        {/* Animated Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-10 left-10 w-20 h-20 border-2 border-white rounded-full animate-pulse" />
+          <div className="absolute bottom-10 right-10 w-32 h-32 border-2 border-white rounded-full animate-pulse delay-700" />
+          <div className="absolute top-1/2 left-1/4 w-16 h-16 border-2 border-white rounded-full animate-pulse delay-1000" />
+        </div>
+
+        <div className="container mx-auto px-4 py-8 relative">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            {/* Left Side - Title and Description */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 animate-fade-up">
+                <div className="p-3 bg-white/10 backdrop-blur rounded-2xl">
+                  <Youtube className="h-8 w-8" />
+                </div>
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-bold">Video Learning Hub</h1>
+                  <p className="text-white/80 text-sm">AI-Powered Course Discovery</p>
+                </div>
+              </div>
+              <p className="text-white/90 text-lg max-w-xl">
+                Discover amazing educational content with AI-powered search. Your learning journey starts here! 🚀
+              </p>
             </div>
-            <p className="text-white/90 text-lg">
-              Discover educational videos powered by AI keyword generation
-            </p>
+
+            {/* Right Side - Gamification Stats */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Videos Watched */}
+              <Card className="bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20 transition-all hover:scale-105">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <Trophy className="h-6 w-6 text-yellow-300" />
+                    <span className="text-2xl font-bold">{videosWatched}</span>
+                  </div>
+                  <p className="text-sm text-white/80">Videos Watched</p>
+                  <Progress value={getProgressToNextLevel()} className="mt-2 h-1" />
+                  <p className="text-xs text-white/60 mt-1">
+                    {10 - (videosWatched % 10)} more to next badge!
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Search Streak */}
+              <Card className="bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20 transition-all hover:scale-105">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <Flame className="h-6 w-6 text-orange-400 animate-pulse" />
+                    <span className="text-2xl font-bold">{searchStreak}</span>
+                  </div>
+                  <p className="text-sm text-white/80">Search Streak</p>
+                  <div className="flex gap-1 mt-2">
+                    {[...Array(Math.min(5, searchStreak))].map((_, i) => (
+                      <Star key={i} className="h-3 w-3 fill-yellow-300 text-yellow-300" />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Saved Videos */}
+              <Card className="bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20 transition-all hover:scale-105">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <Bookmark className="h-6 w-6 text-blue-300" />
+                    <span className="text-2xl font-bold">{savedVideos.size}</span>
+                  </div>
+                  <p className="text-sm text-white/80">Saved Videos</p>
+                </CardContent>
+              </Card>
+
+              {/* Liked Videos */}
+              <Card className="bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20 transition-all hover:scale-105">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <Heart className="h-6 w-6 text-red-300" />
+                    <span className="text-2xl font-bold">{likedVideos.size}</span>
+                  </div>
+                  <p className="text-sm text-white/80">Liked Videos</p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Quick Stats Banner */}
+        <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 hover:shadow-lg transition-shadow">
+            <CardContent className="pt-6 text-center">
+              <Zap className="h-8 w-8 mx-auto mb-2" />
+              <p className="text-2xl font-bold">{videos.length}</p>
+              <p className="text-sm opacity-90">Videos Found</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 hover:shadow-lg transition-shadow">
+            <CardContent className="pt-6 text-center">
+              <Target className="h-8 w-8 mx-auto mb-2" />
+              <p className="text-2xl font-bold capitalize">{learningLevel}</p>
+              <p className="text-sm opacity-90">Learning Level</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 hover:shadow-lg transition-shadow">
+            <CardContent className="pt-6 text-center">
+              <Award className="h-8 w-8 mx-auto mb-2" />
+              <p className="text-2xl font-bold">{aiKeywords.length}</p>
+              <p className="text-sm opacity-90">AI Keywords</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 hover:shadow-lg transition-shadow">
+            <CardContent className="pt-6 text-center">
+              <Sparkles className="h-8 w-8 mx-auto mb-2" />
+              <p className="text-2xl font-bold">{activeTab === "ai" ? "AI" : "Manual"}</p>
+              <p className="text-sm opacity-90">Search Mode</p>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Search Section */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Search for Educational Content</CardTitle>
-            <CardDescription>
-              Choose between AI-powered search with automatic keyword generation or manual search
-            </CardDescription>
+        <Card className="mb-8 shadow-xl border-2">
+          <CardHeader className="bg-gradient-to-r from-muted/50 to-background">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Search className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-2xl">Discover Learning Content</CardTitle>
+                <CardDescription className="text-base">
+                  Use AI to find the perfect educational videos tailored to your needs 🎯
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "manual" | "ai")}>
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="ai" className="flex items-center gap-2">
@@ -194,14 +463,33 @@ const YouTubeCourses = () => {
 
               <TabsContent value="ai" className="space-y-4">
                 <div className="space-y-4">
+                  {/* Quick Topic Suggestions */}
+                  <div className="bg-muted/30 rounded-lg p-3">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">✨ Try these popular topics:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {["Python Programming", "Data Structures", "Machine Learning", "Web Development", "Digital Marketing", "Physics"].map((topic) => (
+                        <button
+                          key={topic}
+                          onClick={() => setSearchQuery(topic)}
+                          className="px-3 py-1 text-xs bg-background hover:bg-primary hover:text-white rounded-full border transition-all hover:scale-105"
+                        >
+                          {topic}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="flex gap-2">
-                    <Input
-                      placeholder="Enter topic (e.g., 'Python programming', 'Data structures')"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && handleAISearch()}
-                      className="flex-1"
-                    />
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Enter topic (e.g., 'Python programming', 'Data structures')"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyPress={(e) => e.key === "Enter" && handleAISearch()}
+                        className="flex-1 pl-10 h-12 text-base"
+                      />
+                    </div>
                     <Select value={learningLevel} onValueChange={setLearningLevel}>
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Level" />
@@ -214,51 +502,67 @@ const YouTubeCourses = () => {
                     </Select>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="grid md:grid-cols-2 gap-3">
                     <Button
                       onClick={handleAISearch}
                       disabled={isLoading || !searchQuery.trim()}
-                      className="flex-1"
+                      size="lg"
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-105"
                     >
                       {isLoading ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                           Searching with AI...
                         </>
                       ) : (
                         <>
-                          <Sparkles className="mr-2 h-4 w-4" />
-                          AI Search
+                          <Sparkles className="mr-2 h-5 w-5" />
+                          🚀 AI Search
                         </>
                       )}
                     </Button>
                     <Button
                       variant="outline"
+                      size="lg"
                       onClick={handleGenerateKeywords}
                       disabled={isGeneratingKeywords || !searchQuery.trim()}
+                      className="border-2 hover:bg-primary hover:text-white font-semibold shadow-md hover:shadow-lg transition-all hover:scale-105"
                     >
                       {isGeneratingKeywords ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                           Generating...
                         </>
                       ) : (
                         <>
-                          <TrendingUp className="mr-2 h-4 w-4" />
-                          Generate Keywords
+                          <TrendingUp className="mr-2 h-5 w-5" />
+                          ✨ Generate Keywords
                         </>
                       )}
                     </Button>
                   </div>
 
                   {aiKeywords.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">AI-Generated Keywords:</p>
+                    <div className="space-y-3 p-4 bg-gradient-to-r from-primary/5 to-purple/5 rounded-lg border-2 border-dashed border-primary/20">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <p className="text-sm font-semibold text-primary">AI-Generated Keywords</p>
+                        <span className="ml-auto text-xs bg-primary/10 px-2 py-1 rounded-full">
+                          {aiKeywords.length} keywords
+                        </span>
+                      </div>
                       <div className="flex flex-wrap gap-2">
                         {aiKeywords.map((keyword, index) => (
-                          <Badge key={index} variant="secondary" className="cursor-pointer hover:bg-primary hover:text-primary-foreground">
+                          <div
+                            key={index}
+                            className="px-3 py-1.5 bg-white dark:bg-gray-800 border-2 border-primary/30 rounded-full text-sm font-medium cursor-pointer hover:bg-primary hover:text-white hover:border-primary transition-all hover:scale-105 shadow-sm"
+                            style={{
+                              animationDelay: `${index * 0.1}s`,
+                              animation: 'fadeInUp 0.5s ease-out forwards'
+                            }}
+                          >
                             {keyword}
-                          </Badge>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -346,58 +650,120 @@ const YouTubeCourses = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {videos.map((video) => (
-                <Card key={video.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
-                  <div className="relative aspect-video" onClick={() => openVideo(video.url)}>
+              {videos.map((video, index) => (
+                <Card 
+                  key={video.id} 
+                  className="overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer group border-2 hover:border-primary/50 hover:-translate-y-1"
+                  style={{
+                    animationDelay: `${index * 0.1}s`,
+                    animation: 'fadeInUp 0.5s ease-out forwards'
+                  }}
+                >
+                  {/* Thumbnail with Interactive Overlay */}
+                  <div className="relative aspect-video" onClick={() => openVideo(video.url, video.id)}>
                     <img
                       src={video.thumbnail}
                       alt={video.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Play className="h-12 w-12 text-white" />
+                    
+                    {/* Play Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                      <div className="transform scale-75 group-hover:scale-100 transition-transform">
+                        <PlayCircle className="h-16 w-16 text-white drop-shadow-lg" />
+                      </div>
                     </div>
+                    
+                    {/* Duration Badge */}
                     {video.duration && (
-                      <Badge className="absolute bottom-2 right-2 bg-black/80">
-                        <Clock className="h-3 w-3 mr-1" />
+                      <div className="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-black/90 text-white text-xs font-semibold flex items-center gap-1 backdrop-blur">
+                        <Clock className="h-3 w-3" />
                         {formatDuration(video.duration)}
-                      </Badge>
+                      </div>
                     )}
+                    
+                    {/* Action Buttons Overlay */}
+                    <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className={`h-8 w-8 p-0 rounded-full shadow-lg ${
+                          savedVideos.has(video.id) ? 'bg-blue-500 hover:bg-blue-600' : 'bg-white/90 hover:bg-white'
+                        }`}
+                        onClick={(e) => toggleSaveVideo(video.id, e)}
+                      >
+                        <Bookmark className={`h-4 w-4 ${savedVideos.has(video.id) ? 'fill-white text-white' : ''}`} />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className={`h-8 w-8 p-0 rounded-full shadow-lg ${
+                          likedVideos.has(video.id) ? 'bg-red-500 hover:bg-red-600' : 'bg-white/90 hover:bg-white'
+                        }`}
+                        onClick={(e) => toggleLikeVideo(video.id, e)}
+                      >
+                        <Heart className={`h-4 w-4 ${likedVideos.has(video.id) ? 'fill-white text-white' : ''}`} />
+                      </Button>
+                    </div>
                   </div>
                   
+                  {/* Card Content */}
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base line-clamp-2 group-hover:text-primary transition-colors">
+                    <CardTitle className="text-base line-clamp-2 group-hover:text-primary transition-colors leading-snug">
                       {video.title}
                     </CardTitle>
-                    <CardDescription className="line-clamp-1">
+                    <CardDescription className="line-clamp-1 flex items-center gap-2">
+                      <Youtube className="h-3 w-3" />
                       {video.channel}
                     </CardDescription>
                   </CardHeader>
                   
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                       {video.description}
                     </p>
                     
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    {/* Stats Row */}
+                    <div className="flex items-center justify-between text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
                       <div className="flex items-center gap-1">
                         <Eye className="h-3 w-3" />
-                        {formatNumber(video.view_count)}
+                        <span className="font-semibold">{formatNumber(video.view_count)}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <ThumbsUp className="h-3 w-3" />
-                        {formatNumber(video.like_count)}
+                        <span className="font-semibold">{formatNumber(video.like_count)}</span>
                       </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2"
+                        onClick={(e) => shareVideo(video, e)}
+                      >
+                        <Share2 className="h-3 w-3" />
+                      </Button>
                     </div>
                     
-                    <Button
-                      className="w-full mt-4"
-                      variant="outline"
-                      onClick={() => openVideo(video.url)}
-                    >
-                      <Youtube className="mr-2 h-4 w-4" />
-                      Watch Video
-                    </Button>
+                    {/* Action Buttons */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        className="w-full bg-red-600 hover:bg-red-700 text-white"
+                        onClick={() => openVideo(video.url, video.id)}
+                      >
+                        <Play className="mr-2 h-4 w-4" />
+                        Watch
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(`https://youtube.com/channel/${video.channel_id}`, '_blank');
+                        }}
+                      >
+                        <Target className="mr-2 h-4 w-4" />
+                        Channel
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -418,6 +784,7 @@ const YouTubeCourses = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 
