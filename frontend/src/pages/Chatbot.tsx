@@ -1,9 +1,34 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Send, Loader2, Sparkles, Trash2, History, BookOpen, Brain, Lightbulb, Plus, Menu, X, Radio } from "lucide-react";
+import { 
+  MessageSquare, 
+  Send, 
+  Loader2, 
+  Sparkles, 
+  Trash2, 
+  History, 
+  BookOpen, 
+  Brain, 
+  Lightbulb, 
+  Plus, 
+  Menu, 
+  X, 
+  Radio,
+  Bot,
+  User,
+  Copy,
+  Check,
+  ThumbsUp,
+  ThumbsDown,
+  RotateCcw,
+  Zap,
+  Star,
+  Heart,
+  Smile
+} from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,10 +43,47 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
+// Animation styles
+const animationStyles = `
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes typewriter {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+  
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+    }
+  }
+`;
+
 interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: string;
+  isStreaming?: boolean;
+  reactions?: {
+    liked?: boolean;
+    copied?: boolean;
+  };
 }
 
 interface ChatSessionSummary {
@@ -135,21 +197,89 @@ const Chatbot = () => {
     setInput("");
     setIsLoading(true);
 
-    try {
-      const data = await api.chatbotAsk(currentInput);
-      
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: data.response,
-        timestamp: data.timestamp,
-      };
+    // Add empty assistant message for streaming
+    const streamingMessage: Message = {
+      role: "assistant",
+      content: "",
+      timestamp: new Date().toISOString(),
+      isStreaming: true,
+    };
+    
+    setMessages(prev => [...prev, streamingMessage]);
 
-      setMessages((prev) => [...prev, assistantMessage]);
-      setSessionId(data.session_id);
-      loadChatSessions();
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await fetch("https://bput-api.tecosys.ai/api/chatbot/ask/stream", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          message: currentInput,
+          session_id: sessionId,
+          student_id: user?.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get response");
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n");
+
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                
+                if (data.error) {
+                  throw new Error(data.error);
+                }
+                
+                if (data.chunk) {
+                  fullResponse += data.chunk;
+                  
+                  // Update the streaming message
+                  setMessages(prev => {
+                    const newMessages = [...prev];
+                    const lastMsg = newMessages[newMessages.length - 1];
+                    if (lastMsg.role === "assistant") {
+                      lastMsg.content = fullResponse;
+                      lastMsg.isStreaming = !data.done;
+                    }
+                    return newMessages;
+                  });
+                }
+                
+                if (data.done && data.session_id) {
+                  setSessionId(data.session_id);
+                  loadChatSessions();
+                }
+              } catch (e) {
+                // Skip invalid JSON lines
+              }
+            }
+          }
+        }
+      }
+      
+      toast.success("Response received!");
     } catch (error: any) {
       toast.error("Failed to send message");
       console.error(error);
+      // Remove the failed streaming message
+      setMessages(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
@@ -296,10 +426,17 @@ const Chatbot = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-secondary text-white">
-        <div className="container mx-auto px-4 py-8 md:py-12">
-          <div className="flex items-center justify-between animate-fade-up">
-            <div className="flex items-center gap-4">
+      <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white relative overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-10 left-10 w-32 h-32 border-4 border-white rounded-full animate-pulse" />
+          <div className="absolute bottom-10 right-10 w-24 h-24 border-4 border-white rounded-full animate-pulse delay-700" />
+          <div className="absolute top-1/2 right-1/4 w-20 h-20 border-4 border-white rounded-full animate-pulse delay-1000" />
+        </div>
+
+        <div className="container mx-auto px-4 py-6 md:py-10 relative">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 md:gap-4">
               <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="lg:hidden text-white hover:bg-white/20">
@@ -311,31 +448,60 @@ const Chatbot = () => {
                 </SheetContent>
               </Sheet>
               
-              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <MessageSquare className="h-6 w-6 md:h-8 md:w-8" />
+              <div className="relative">
+                <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-white/20 backdrop-blur-lg flex items-center justify-center shadow-2xl border-2 border-white/30">
+                  <Bot className="h-7 w-7 md:h-9 md:w-9 text-white" />
+                </div>
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse" />
               </div>
+              
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold">AI Learning Assistant</h1>
-                <p className="text-white/90 text-sm md:text-base">Ask questions, get instant answers</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <h1 className="text-xl md:text-3xl font-bold">AI Learning Assistant</h1>
+                  <span className="hidden md:inline-block px-2 py-1 text-xs bg-yellow-400 text-yellow-900 rounded-full font-semibold">
+                    ⚡ LIVE
+                  </span>
+                </div>
+                <p className="text-white/90 text-xs md:text-base flex items-center gap-2">
+                  <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
+                  Streaming responses • Powered by GPT-4
+                </p>
               </div>
             </div>
             
-            <div className="hidden md:flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <Button 
                 onClick={() => window.location.href = '/voice-chat'} 
                 variant="secondary" 
-                className="gap-2"
+                className="hidden md:flex gap-2 hover:scale-105 transition-transform"
               >
                 <Radio className="h-4 w-4" />
-                Voice Assistant
+                Voice Chat
               </Button>
               <Button 
                 onClick={handleNewChat} 
                 variant="secondary"
+                className="gap-2 hover:scale-105 transition-transform"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                New Chat
+                <Plus className="h-4 w-4" />
+                <span className="hidden md:inline">New Chat</span>
               </Button>
+            </div>
+          </div>
+          
+          {/* Stats */}
+          <div className="mt-4 grid grid-cols-3 gap-2 md:gap-4 max-w-md">
+            <div className="bg-white/10 backdrop-blur rounded-lg p-2 md:p-3 text-center">
+              <div className="text-lg md:text-2xl font-bold">{messages.length}</div>
+              <div className="text-xs text-white/80">Messages</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-lg p-2 md:p-3 text-center">
+              <div className="text-lg md:text-2xl font-bold">{chatSessions.length}</div>
+              <div className="text-xs text-white/80">Chats</div>
+            </div>
+            <div className="bg-white/10 backdrop-blur rounded-lg p-2 md:p-3 text-center flex flex-col items-center justify-center">
+              <Star className="h-5 w-5 md:h-6 md:w-6 fill-yellow-400 text-yellow-400" />
+              <div className="text-xs text-white/80 mt-1">Active</div>
             </div>
           </div>
         </div>
@@ -372,74 +538,210 @@ const Chatbot = () => {
 
               {/* Chat Tab */}
               <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
-                <div className="flex-1 flex flex-col bg-background rounded-lg border">
-                  <ScrollArea className="flex-1 p-4">
-                    <div className="max-w-3xl mx-auto space-y-6">
+                <style>{animationStyles}</style>
+                <div className="flex-1 flex flex-col bg-gradient-to-b from-background to-muted/10 rounded-lg border-2 shadow-xl">
+                  <ScrollArea className="flex-1 p-4 md:p-6">
+                    <div className="max-w-4xl mx-auto space-y-6">
                       {messages.length === 0 ? (
-                        <div className="text-center py-12">
-                          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4 animate-pulse">
-                            <Sparkles className="h-10 w-10 text-primary" />
+                        <div className="text-center py-16">
+                          <div className="relative mb-6">
+                            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mx-auto shadow-2xl animate-pulse">
+                              <Sparkles className="h-12 w-12 text-white" />
+                            </div>
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full bg-purple-500/20 blur-xl" />
                           </div>
-                          <h3 className="text-xl font-semibold mb-2">Start a conversation</h3>
-                          <p className="text-muted-foreground max-w-md mx-auto">
-                            Ask me anything about programming, data science, or any learning topic
+                          <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                            Hi! I'm your AI Learning Assistant 👋
+                          </h3>
+                          <p className="text-muted-foreground max-w-md mx-auto text-lg mb-6">
+                            Ask me anything about programming, data science, mathematics, or any learning topic!
                           </p>
+                          <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
+                            {["Explain Python classes", "Help with calculus", "Data structures tutorial", "Study tips"].map((suggestion) => (
+                              <button
+                                key={suggestion}
+                                onClick={() => setInput(suggestion)}
+                                className="px-4 py-2 text-sm bg-muted hover:bg-primary hover:text-white rounded-full border-2 transition-all hover:scale-105"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       ) : (
                         messages.map((message, index) => (
                           <div
                             key={index}
-                            className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-fade-up`}
+                            className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                            style={{
+                              animation: "fadeInUp 0.5s ease-out",
+                              animationDelay: `${index * 0.1}s`,
+                              animationFillMode: "backwards"
+                            }}
                           >
-                            <div
-                              className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                                message.role === "user"
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-muted"
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge variant={message.role === "user" ? "secondary" : "outline"} className="text-xs">
-                                  {message.role === "user" ? "You" : "AI"}
-                                </Badge>
+                            {/* Avatar for Assistant */}
+                            {message.role === "assistant" && (
+                              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                                <Bot className="h-5 w-5 text-white" />
                               </div>
-                              <div className={`prose prose-sm max-w-none ${message.role === "user" ? "prose-invert" : "dark:prose-invert"}`}>
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                  {message.content}
-                                </ReactMarkdown>
+                            )}
+                            
+                            {/* Message Content */}
+                            <div className={`flex flex-col max-w-[80%] ${message.role === "user" ? "items-end" : "items-start"}`}>
+                              <div
+                                className={`group relative rounded-2xl px-5 py-4 shadow-md transition-all hover:shadow-lg ${
+                                  message.role === "user"
+                                    ? "bg-gradient-to-br from-primary to-purple-600 text-white"
+                                    : "bg-white dark:bg-gray-800 border-2"
+                                }`}
+                              >
+                                {/* Streaming indicator */}
+                                {message.isStreaming && (
+                                  <div className="absolute -top-8 left-0 flex items-center gap-2 text-xs text-muted-foreground">
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    <span>AI is typing...</span>
+                                  </div>
+                                )}
+                                
+                                <div className={`prose prose-sm max-w-none ${
+                                  message.role === "user" 
+                                    ? "prose-invert" 
+                                    : "dark:prose-invert"
+                                }`}>
+                                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {message.content || "..."}
+                                  </ReactMarkdown>
+                                </div>
+                                
+                                {/* Action Buttons */}
+                                {message.role === "assistant" && message.content && !message.isStreaming && (
+                                  <div className="flex gap-1 mt-3 pt-3 border-t opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 px-2 text-xs"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(message.content);
+                                        toast.success("Copied to clipboard!");
+                                        const updatedMessages = [...messages];
+                                        updatedMessages[index].reactions = { ...updatedMessages[index].reactions, copied: true };
+                                        setMessages(updatedMessages);
+                                        setTimeout(() => {
+                                          updatedMessages[index].reactions = { ...updatedMessages[index].reactions, copied: false };
+                                          setMessages([...updatedMessages]);
+                                        }, 2000);
+                                      }}
+                                    >
+                                      {message.reactions?.copied ? (
+                                        <Check className="h-3 w-3 mr-1" />
+                                      ) : (
+                                        <Copy className="h-3 w-3 mr-1" />
+                                      )}
+                                      Copy
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className={`h-7 px-2 text-xs ${message.reactions?.liked ? 'text-green-600' : ''}`}
+                                      onClick={() => {
+                                        const updatedMessages = [...messages];
+                                        updatedMessages[index].reactions = {
+                                          ...updatedMessages[index].reactions,
+                                          liked: !updatedMessages[index].reactions?.liked
+                                        };
+                                        setMessages(updatedMessages);
+                                        toast.success(updatedMessages[index].reactions?.liked ? "👍 Helpful!" : "Feedback removed");
+                                      }}
+                                    >
+                                      <ThumbsUp className="h-3 w-3 mr-1" />
+                                      {message.reactions?.liked ? "Helpful!" : "Like"}
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-7 px-2 text-xs"
+                                      onClick={() => {
+                                        setInput("Can you explain that differently?");
+                                      }}
+                                    >
+                                      <RotateCcw className="h-3 w-3 mr-1" />
+                                      Retry
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
+                              
+                              {/* Timestamp */}
+                              <span className="text-xs text-muted-foreground mt-1 px-2">
+                                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
                             </div>
+                            
+                            {/* Avatar for User */}
+                            {message.role === "user" && (
+                              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+                                <User className="h-5 w-5 text-white" />
+                              </div>
+                            )}
                           </div>
                         ))
-                      )}
-                      {isLoading && (
-                        <div className="flex justify-start animate-fade-up">
-                          <div className="bg-muted rounded-2xl px-4 py-3">
-                            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                          </div>
-                        </div>
                       )}
                       <div ref={messagesEndRef} />
                     </div>
                   </ScrollArea>
 
-                  <div className="border-t p-4">
-                    <div className="max-w-3xl mx-auto flex gap-2">
-                      <Input
-                        placeholder="Type your message..."
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-                        disabled={isLoading}
-                        className="flex-1"
-                      />
-                      <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="icon">
-                        {isLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                      </Button>
+                  {/* Input Area */}
+                  <div className="border-t-2 bg-background/80 backdrop-blur p-4">
+                    <div className="max-w-4xl mx-auto">
+                      <div className="flex gap-2 items-end">
+                        <div className="flex-1 relative">
+                          <Textarea
+                            placeholder="Ask me anything... (Press Enter to send, Shift+Enter for new line)"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSend();
+                              }
+                            }}
+                            disabled={isLoading}
+                            className="min-h-[60px] max-h-[200px] resize-none pr-12 text-base"
+                            rows={2}
+                          />
+                          <div className="absolute bottom-3 right-3 flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0"
+                              onClick={() => {
+                                const emojis = ["😊", "🤔", "👍", "💡", "🎯", "🚀"];
+                                setInput(input + emojis[Math.floor(Math.random() * emojis.length)]);
+                              }}
+                            >
+                              <Smile className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={handleSend} 
+                          disabled={isLoading || !input.trim()}
+                          size="lg"
+                          className="h-[60px] w-[60px] rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                        >
+                          {isLoading ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
+                            <Send className="h-5 w-5" />
+                          )}
+                        </Button>
+                      </div>
+                      
+                      {/* Quick Actions */}
+                      <div className="flex gap-2 mt-3 text-xs text-muted-foreground">
+                        <Zap className="h-3 w-3" />
+                        <span>AI-powered • Real-time responses • Markdown supported</span>
+                      </div>
                     </div>
                   </div>
                 </div>

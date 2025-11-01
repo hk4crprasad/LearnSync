@@ -138,6 +138,82 @@ class ChatbotService:
         """Delete chat session"""
         result = await self.collection.delete_one({"session_id": session_id})
         return result.deleted_count > 0
+    
+    async def get_context(self, student_id: str, session_id: Optional[str] = None) -> List[dict]:
+        """Get conversation context for streaming"""
+        system_message = {
+            "role": "system",
+            "content": "You are a helpful and friendly AI learning assistant. Explain concepts clearly, provide examples, and encourage students. Use emojis occasionally to make responses more engaging."
+        }
+        
+        if not session_id:
+            return [system_message]
+        
+        session = await self.collection.find_one({"session_id": session_id})
+        if not session:
+            return [system_message]
+        
+        # Get last 10 messages for context (to avoid token limits)
+        messages = session.get("messages", [])[-10:]
+        context = [system_message]
+        
+        for msg in messages:
+            context.append({
+                "role": msg["role"],
+                "content": msg["content"]
+            })
+        
+        return context
+    
+    async def save_chat_message(
+        self, 
+        student_id: str, 
+        session_id: Optional[str], 
+        user_message: str, 
+        assistant_message: str
+    ) -> str:
+        """Save chat messages to database and return session_id"""
+        session_id = session_id or str(uuid.uuid4())
+        
+        user_msg = {
+            "role": "user",
+            "content": user_message,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        assistant_msg = {
+            "role": "assistant",
+            "content": assistant_message,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        existing_session = await self.collection.find_one({"session_id": session_id})
+        
+        if existing_session:
+            await self.collection.update_one(
+                {"_id": existing_session["_id"]},
+                {
+                    "$push": {
+                        "messages": {
+                            "$each": [user_msg, assistant_msg]
+                        }
+                    },
+                    "$set": {
+                        "updated_at": datetime.utcnow().isoformat()
+                    }
+                }
+            )
+        else:
+            session_dict = {
+                "student_id": student_id,
+                "session_id": session_id,
+                "messages": [user_msg, assistant_msg],
+                "created_at": datetime.utcnow().isoformat(),
+                "updated_at": datetime.utcnow().isoformat()
+            }
+            await self.collection.insert_one(session_dict)
+        
+        return session_id
 
 
 chatbot_service = ChatbotService()

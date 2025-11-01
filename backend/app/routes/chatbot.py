@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from typing import List
+import json
 from app.schemas.chatbot import (
     ChatRequest, 
     ChatResponse, 
@@ -35,6 +37,61 @@ async def ask_chatbot(
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing chat: {str(e)}")
+
+
+@router.post("/ask/stream")
+async def ask_chatbot_stream(
+    chat_request: ChatRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """Ask the AI chatbot with streaming response"""
+    # Auto-fill student_id from current user if not provided
+    if not chat_request.student_id:
+        chat_request.student_id = current_user["id"]
+    
+    # Verify authorization
+    if current_user["role"] == "student" and chat_request.student_id != current_user["id"]:
+        raise HTTPException(status_code=403, detail="Cannot chat as another student")
+    
+    async def generate_stream():
+        try:
+            # Get chat history for context
+            context = await chatbot_service.get_context(chat_request.student_id, chat_request.session_id)
+            
+            # Create the streaming prompt
+            messages = context + [{"role": "user", "content": chat_request.message}]
+            
+            # Stream from OpenAI
+            full_response = ""
+            async for chunk in ai_client.stream_chat(messages):
+                if chunk:
+                    full_response += chunk
+                    # Send as JSON for easier parsing in frontend
+                    yield f"data: {json.dumps({'chunk': chunk, 'done': False})}\n\n"
+            
+            # Save the complete conversation
+            session_id = await chatbot_service.save_chat_message(
+                student_id=chat_request.student_id,
+                session_id=chat_request.session_id,
+                user_message=chat_request.message,
+                assistant_message=full_response
+            )
+            
+            # Send final message with session_id
+            yield f"data: {json.dumps({'chunk': '', 'done': True, 'session_id': session_id})}\n\n"
+            
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e), 'done': True})}\n\n"
+    
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 
 @router.get("/sessions/{session_id}", response_model=ChatSession)

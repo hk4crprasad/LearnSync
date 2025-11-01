@@ -37,6 +37,24 @@ class AzureOpenAIClient:
             print(f"Error generating AI response: {str(e)}")
             return "I apologize, but I'm having trouble processing your request. Please try again."
     
+    async def stream_chat(self, messages: List[Dict[str, str]]):
+        """Stream AI response chunk by chunk"""
+        try:
+            stream = self.client.chat.completions.create(
+                model=self.deployment_name,
+                messages=messages,
+                stream=True,
+                temperature=0.7,
+            )
+            
+            for chunk in stream:
+                if chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
+                    
+        except Exception as e:
+            print(f"Error streaming AI response: {str(e)}")
+            yield "I apologize, but I'm having trouble processing your request. Please try again."
+    
     def generate_learning_path(self, student_data: dict) -> str:
         """Generate personalized learning path"""
         prompt = f"""
