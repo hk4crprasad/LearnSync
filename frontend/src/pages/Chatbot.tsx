@@ -30,6 +30,7 @@ import {
   Smile
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import ReactMarkdown from "react-markdown";
@@ -98,6 +99,7 @@ interface ChatSessionSummary {
 
 const Chatbot = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -159,9 +161,9 @@ const Chatbot = () => {
       })));
       setSessionId(session_id);
       setIsSidebarOpen(false);
-      toast.success("Chat session loaded");
+      toast.success(t("chat.session_loaded"));
     } catch (error) {
-      toast.error("Failed to load chat session");
+      toast.error(t("chat.failed_load_session"));
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -176,9 +178,9 @@ const Chatbot = () => {
         setMessages([]);
         setSessionId(null);
       }
-      toast.success("Chat session deleted");
+      toast.success(t("chat.session_deleted"));
     } catch (error) {
-      toast.error("Failed to delete chat session");
+      toast.error(t("chat.failed_delete_session"));
       console.error(error);
     }
   };
@@ -292,9 +294,9 @@ const Chatbot = () => {
         throw new Error("No response received from AI");
       }
       
-      toast.success("Response received!");
+      toast.success(t("chat.response_received"));
     } catch (error: any) {
-      toast.error("Failed to send message");
+      toast.error(t("chat.failed_send_message"));
       console.error(error);
       // Remove the failed streaming message
       setMessages(prev => prev.slice(0, -1));
@@ -319,9 +321,9 @@ const Chatbot = () => {
       });
       
       setLearningPathResult(data.learning_path);
-      toast.success("Learning path generated!");
+      toast.success(t("chat.learning_path_generated"));
     } catch (error) {
-      toast.error("Failed to generate learning path");
+      toast.error(t("chat.failed_learning_path"));
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -338,9 +340,9 @@ const Chatbot = () => {
       });
       
       setFeedbackResult(data.feedback);
-      toast.success("Feedback generated!");
+      toast.success(t("chat.feedback_generated"));
     } catch (error) {
-      toast.error("Failed to get feedback");
+      toast.error(t("chat.failed_get_feedback"));
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -356,9 +358,9 @@ const Chatbot = () => {
       });
       
       setExplainResult(data.explanation);
-      toast.success("Concept explained!");
+      toast.success(t("chat.concept_explained"));
     } catch (error) {
-      toast.error("Failed to explain concept");
+      toast.error(t("chat.failed_explain"));
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -369,7 +371,7 @@ const Chatbot = () => {
     setMessages([]);
     setSessionId(null);
     setIsSidebarOpen(false);
-    toast.success("New chat started");
+    toast.success(t("chat.new_chat_started"));
   };
 
   const ChatSidebar = () => (
@@ -377,7 +379,7 @@ const Chatbot = () => {
       <div className="p-4 border-b">
         <Button onClick={handleNewChat} className="w-full" variant="default">
           <Plus className="h-4 w-4 mr-2" />
-          New Chat
+          {t("chat.new_chat")}
         </Button>
       </div>
       
@@ -387,7 +389,7 @@ const Chatbot = () => {
             <div className="text-center py-8 px-4">
               <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
               <p className="text-sm text-muted-foreground">
-                No previous chats
+                {t("chat.no_previous_chats")}
               </p>
             </div>
           ) : (
@@ -435,7 +437,7 @@ const Chatbot = () => {
       
       <div className="p-4 border-t">
         <div className="text-xs text-muted-foreground text-center">
-          {chatSessions.length} {chatSessions.length === 1 ? 'conversation' : 'conversations'}
+          {chatSessions.length} {chatSessions.length === 1 ? t("chat.conversation") : t("chat.conversations")}
         </div>
       </div>
     </div>
@@ -475,14 +477,14 @@ const Chatbot = () => {
               
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-xl md:text-3xl font-bold">AI Learning Assistant</h1>
+                  <h1 className="text-xl md:text-3xl font-bold">{t("chat.title")}</h1>
                   <span className="hidden md:inline-block px-2 py-1 text-xs bg-yellow-400 text-yellow-900 rounded-full font-semibold">
-                    ⚡ LIVE
+                    ⚡ {t("chat.live")}
                   </span>
                 </div>
                 <p className="text-white/90 text-xs md:text-base flex items-center gap-2">
                   <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
-                  Streaming responses • Powered by GPT-4
+                  {t("chat.streaming_info")}
                 </p>
               </div>
             </div>
@@ -494,7 +496,7 @@ const Chatbot = () => {
                 className="hidden md:flex gap-2 hover:scale-105 transition-transform"
               >
                 <Radio className="h-4 w-4" />
-                Voice Chat
+                {t("chat.voice_chat")}
               </Button>
               <Button 
                 onClick={handleNewChat} 
@@ -502,7 +504,7 @@ const Chatbot = () => {
                 className="gap-2 hover:scale-105 transition-transform"
               >
                 <Plus className="h-4 w-4" />
-                <span className="hidden md:inline">New Chat</span>
+                <span className="hidden md:inline">{t("chat.new_chat")}</span>
               </Button>
             </div>
           </div>
@@ -511,11 +513,11 @@ const Chatbot = () => {
           <div className="mt-4 grid grid-cols-3 gap-2 md:gap-4 max-w-md">
             <div className="bg-white/10 backdrop-blur rounded-lg p-2 md:p-3 text-center">
               <div className="text-lg md:text-2xl font-bold">{messages.length}</div>
-              <div className="text-xs text-white/80">Messages</div>
+              <div className="text-xs text-white/80">{t("chat.messages")}</div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-lg p-2 md:p-3 text-center">
               <div className="text-lg md:text-2xl font-bold">{chatSessions.length}</div>
-              <div className="text-xs text-white/80">Chats</div>
+              <div className="text-xs text-white/80">{t("chat.chats")}</div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-lg p-2 md:p-3 text-center flex flex-col items-center justify-center">
               <Star className="h-5 w-5 md:h-6 md:w-6 fill-yellow-400 text-yellow-400" />
@@ -569,10 +571,10 @@ const Chatbot = () => {
                             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full bg-purple-500/20 blur-xl" />
                           </div>
                           <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                            Hi! I'm your AI Learning Assistant 👋
+                            {t("chat.hero_greeting")}
                           </h3>
                           <p className="text-muted-foreground max-w-md mx-auto text-lg mb-6">
-                            Ask me anything about programming, data science, mathematics, or any learning topic!
+                            {t("chat.hero_description")}
                           </p>
                           <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
                             {["Explain Python classes", "Help with calculus", "Data structures tutorial", "Study tips"].map((suggestion) => (
@@ -617,7 +619,7 @@ const Chatbot = () => {
                                 {message.isStreaming && (
                                   <div className="absolute -top-8 left-0 flex items-center gap-2 text-xs text-muted-foreground">
                                     <Loader2 className="h-3 w-3 animate-spin" />
-                                    <span>AI is typing...</span>
+                                    <span>{t("chat.ai_typing")}</span>
                                   </div>
                                 )}
                                 
@@ -640,7 +642,7 @@ const Chatbot = () => {
                                       className="h-7 px-2 text-xs"
                                       onClick={() => {
                                         navigator.clipboard.writeText(message.content);
-                                        toast.success("Copied to clipboard!");
+                                        toast.success(t("common.copied_to_clipboard"));
                                         const updatedMessages = [...messages];
                                         updatedMessages[index].reactions = { ...updatedMessages[index].reactions, copied: true };
                                         setMessages(updatedMessages);
@@ -655,7 +657,7 @@ const Chatbot = () => {
                                       ) : (
                                         <Copy className="h-3 w-3 mr-1" />
                                       )}
-                                      Copy
+                                      {t("common.copy")}
                                     </Button>
                                     <Button
                                       size="sm"
@@ -668,11 +670,11 @@ const Chatbot = () => {
                                           liked: !updatedMessages[index].reactions?.liked
                                         };
                                         setMessages(updatedMessages);
-                                        toast.success(updatedMessages[index].reactions?.liked ? "👍 Helpful!" : "Feedback removed");
+                                        toast.success(updatedMessages[index].reactions?.liked ? t("chat.helpful") : t("chat.feedback_removed"));
                                       }}
                                     >
                                       <ThumbsUp className="h-3 w-3 mr-1" />
-                                      {message.reactions?.liked ? "Helpful!" : "Like"}
+                                      {message.reactions?.liked ? t("chat.helpful") : t("common.like")}
                                     </Button>
                                     <Button
                                       size="sm"
@@ -683,7 +685,7 @@ const Chatbot = () => {
                                       }}
                                     >
                                       <RotateCcw className="h-3 w-3 mr-1" />
-                                      Retry
+                                      {t("common.retry")}
                                     </Button>
                                   </div>
                                 )}
@@ -714,7 +716,7 @@ const Chatbot = () => {
                       <div className="flex gap-2 items-end">
                         <div className="flex-1 relative">
                           <Textarea
-                            placeholder="Ask me anything... (Press Enter to send, Shift+Enter for new line)"
+                            placeholder={t("chat.placeholder")}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => {

@@ -7,8 +7,10 @@ import { api, Course, Recommendations } from "@/lib/api";
 import { BookOpen, TrendingUp, Award, Sparkles, Loader2, ArrowRight, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
@@ -27,7 +29,7 @@ const Dashboard = () => {
         setEnrolledCourses(enrolledData);
         setRecommendations(recsData);
       } catch (error: any) {
-        toast.error("Failed to load dashboard data");
+        toast.error(t("dashboard.failed_load"));
         console.error(error);
       } finally {
         setIsLoading(false);
@@ -35,7 +37,7 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, []);
+  }, [t]);
 
   if (isLoading) {
     return (
@@ -52,10 +54,10 @@ const Dashboard = () => {
         <div className="container mx-auto px-4 py-12">
           <div className="animate-fade-up">
             <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-              Welcome back, {user?.full_name}! 👋
+              {t("dashboard.welcome_back")}, {user?.full_name}! 👋
             </h1>
             <p className="text-white/90 text-lg">
-              Continue your learning journey
+              {t("dashboard.continue_learning")}
             </p>
           </div>
         </div>
@@ -73,14 +75,14 @@ const Dashboard = () => {
                     <Sparkles className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">AI Practice Assessment</h3>
-                    <p className="text-sm text-muted-foreground">Generate personalized questions</p>
+                    <h3 className="font-semibold text-lg">{t("dashboard.ai_practice")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("dashboard.ai_practice_desc")}</p>
                   </div>
                 </div>
                 <Link to="/practice">
                   <Button className="gap-2">
                     <Sparkles className="h-4 w-4" />
-                    Start Practice
+                    {t("dashboard.start_practice")}
                   </Button>
                 </Link>
               </div>
@@ -96,14 +98,14 @@ const Dashboard = () => {
                     <TrendingUp className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Adaptive Learning Plan</h3>
-                    <p className="text-sm text-muted-foreground">Get personalized study recommendations</p>
+                    <h3 className="font-semibold text-lg">{t("dashboard.adaptive_learning")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("dashboard.adaptive_learning_desc")}</p>
                   </div>
                 </div>
                 <Link to="/adaptive-learning">
                   <Button variant="outline" className="gap-2 border-blue-500/50">
                     <TrendingUp className="h-4 w-4" />
-                    View Plan
+                    {t("dashboard.view_plan")}
                   </Button>
                 </Link>
               </div>
@@ -119,14 +121,14 @@ const Dashboard = () => {
                     <Award className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Scholarships</h3>
-                    <p className="text-sm text-muted-foreground">Find financial aid opportunities</p>
+                    <h3 className="font-semibold text-lg">{t("dashboard.scholarships")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("dashboard.scholarships_desc")}</p>
                   </div>
                 </div>
                 <Link to="/scholarships">
                   <Button variant="outline" className="gap-2 border-green-500/50">
                     <Award className="h-4 w-4" />
-                    Explore
+                    {t("dashboard.explore")}
                   </Button>
                 </Link>
               </div>
@@ -142,14 +144,14 @@ const Dashboard = () => {
                     <Youtube className="h-6 w-6 text-red-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Video Courses</h3>
-                    <p className="text-sm text-muted-foreground">AI-powered video search</p>
+                    <h3 className="font-semibold text-lg">{t("dashboard.youtube_courses")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("dashboard.youtube_courses_desc")}</p>
                   </div>
                 </div>
                 <Link to="/youtube-courses">
                   <Button variant="outline" className="gap-2 border-red-500/50">
                     <Youtube className="h-4 w-4" />
-                    Discover
+                    {t("dashboard.discover")}
                   </Button>
                 </Link>
               </div>
@@ -161,34 +163,34 @@ const Dashboard = () => {
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="animate-scale-in border-primary/20 hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Enrolled Courses</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("dashboard.enrolled_courses")}</CardTitle>
               <BookOpen className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-primary">{enrolledCourses.length}</div>
-              <p className="text-xs text-muted-foreground">Active learning paths</p>
+              <p className="text-xs text-muted-foreground">{t("dashboard.active_learning_paths")}</p>
             </CardContent>
           </Card>
 
           <Card className="animate-scale-in border-secondary/20 hover:shadow-lg transition-shadow" style={{ animationDelay: "100ms" }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Progress</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("dashboard.progress")}</CardTitle>
               <TrendingUp className="h-4 w-4 text-secondary" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-secondary">75%</div>
-              <p className="text-xs text-muted-foreground">Course completion rate</p>
+              <p className="text-xs text-muted-foreground">{t("dashboard.completion_rate")}</p>
             </CardContent>
           </Card>
 
           <Card className="animate-scale-in border-accent/20 hover:shadow-lg transition-shadow" style={{ animationDelay: "200ms" }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Achievements</CardTitle>
+              <CardTitle className="text-sm font-medium">{t("dashboard.achievements")}</CardTitle>
               <Award className="h-4 w-4 text-accent" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-accent">12</div>
-              <p className="text-xs text-muted-foreground">Badges earned</p>
+              <p className="text-xs text-muted-foreground">{t("dashboard.badges_earned")}</p>
             </CardContent>
           </Card>
         </div>
@@ -197,7 +199,7 @@ const Dashboard = () => {
         {enrolledCourses.length > 0 && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">My Enrolled Courses</h2>
+              <h2 className="text-2xl font-bold">{t("dashboard.my_enrolled_courses")}</h2>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -214,7 +216,7 @@ const Dashboard = () => {
                       </Badge>
                       <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-md">
                         <BookOpen className="h-3 w-3" />
-                        <span className="text-xs font-semibold">Enrolled</span>
+                        <span className="text-xs font-semibold">{t("dashboard.enrolled")}</span>
                       </div>
                     </div>
                     <CardTitle className="text-xl group-hover:text-primary transition-colors">
@@ -227,14 +229,14 @@ const Dashboard = () => {
                   <CardContent>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span>{course.topics?.length || 0} Topics</span>
+                        <span>{course.topics?.length || 0} {t("dashboard.topics")}</span>
                         <span>
-                          {course.topics?.reduce((acc, t) => acc + t.estimated_duration, 0) || 0} min
+                          {course.topics?.reduce((acc, t) => acc + t.estimated_duration, 0) || 0} {t("dashboard.min")}
                         </span>
                       </div>
                       <Button className="w-full" asChild>
                         <Link to={`/courses/${course.id}`}>
-                          Continue Learning
+                          {t("dashboard.continue_learning")}
                         </Link>
                       </Button>
                     </div>
@@ -251,10 +253,10 @@ const Dashboard = () => {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
-                <CardTitle>AI-Powered Recommendations</CardTitle>
+                <CardTitle>{t("dashboard.ai_recommendations")}</CardTitle>
               </div>
               <CardDescription>
-                Personalized course suggestions based on your profile
+                {t("dashboard.ai_recommendations_desc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -265,7 +267,7 @@ const Dashboard = () => {
               </div>
               <Button variant="outline" className="mt-4" asChild>
                 <Link to="/profile">
-                  View Full Recommendations <ArrowRight className="ml-2 h-4 w-4" />
+                  {t("dashboard.view_full_recommendations")} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </CardContent>
@@ -275,9 +277,9 @@ const Dashboard = () => {
         {/* Available Courses */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Available Courses</h2>
+            <h2 className="text-2xl font-bold">{t("dashboard.available_courses")}</h2>
             <Button variant="outline" asChild>
-              <Link to="/courses">View All</Link>
+              <Link to="/courses">{t("dashboard.view_all")}</Link>
             </Button>
           </div>
 
@@ -307,14 +309,14 @@ const Dashboard = () => {
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{course.topics?.length || 0} Topics</span>
+                      <span>{course.topics?.length || 0} {t("dashboard.topics")}</span>
                       <span>
-                        {course.topics?.reduce((acc, t) => acc + t.estimated_duration, 0) || 0} min
+                        {course.topics?.reduce((acc, t) => acc + t.estimated_duration, 0) || 0} {t("dashboard.min")}
                       </span>
                     </div>
                     <Button className="w-full" asChild>
                       <Link to={`/courses/${course.id}`}>
-                        Start Learning
+                        {t("dashboard.start_learning")}
                       </Link>
                     </Button>
                   </div>

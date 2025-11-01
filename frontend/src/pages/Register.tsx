@@ -8,8 +8,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, GraduationCap, UserCircle, BookOpen, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 const Register = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: "",
     full_name: "",
@@ -70,16 +72,16 @@ const Register = () => {
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
             <GraduationCap className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Create Your Account</CardTitle>
+          <CardTitle className="text-2xl font-bold">{t("auth.create_account")}</CardTitle>
           <CardDescription>
-            Join thousands of learners on their journey to success
+            {t("auth.sign_up_description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Role Selection */}
             <div className="space-y-2">
-              <Label>I want to register as</Label>
+              <Label>{t("auth.i_am_a")}</Label>
               <div className="grid grid-cols-3 gap-2">
                 <Button
                   type="button"
@@ -92,7 +94,7 @@ const Register = () => {
                   disabled={isLoading}
                 >
                   <UserCircle className="h-5 w-5" />
-                  <span className="text-xs">Student</span>
+                  <span className="text-xs">{t("auth.student")}</span>
                 </Button>
                 
                 <Button
@@ -106,7 +108,7 @@ const Register = () => {
                   disabled={isLoading}
                 >
                   <BookOpen className="h-5 w-5" />
-                  <span className="text-xs">Teacher</span>
+                  <span className="text-xs">{t("auth.teacher")}</span>
                 </Button>
                 
                 <Button
@@ -120,18 +122,18 @@ const Register = () => {
                   disabled={isLoading}
                 >
                   <Shield className="h-5 w-5" />
-                  <span className="text-xs">Admin</span>
+                  <span className="text-xs">{t("auth.admin")}</span>
                 </Button>
               </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name *</Label>
+                <Label htmlFor="full_name">{t("auth.full_name")} *</Label>
                 <Input
                   id="full_name"
                   name="full_name"
-                  placeholder="John Doe"
+                  placeholder={t("auth.full_name_placeholder")}
                   value={formData.full_name}
                   onChange={handleChange}
                   required
@@ -140,26 +142,28 @@ const Register = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="email">{t("auth.email")} *</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t("auth.email_placeholder")}
                   value={formData.email}
                   onChange={handleChange}
                   required
                   disabled={isLoading}
                 />
               </div>
+            </div>
 
+            <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="password">Password *</Label>
+                <Label htmlFor="password">{t("auth.password")} *</Label>
                 <Input
                   id="password"
                   name="password"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={t("auth.password_placeholder")}
                   value={formData.password}
                   onChange={handleChange}
                   required
@@ -286,18 +290,18 @@ const Register = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
+                  {t("auth.creating_account")}
                 </>
               ) : (
-                "Create Account"
+                t("auth.create_account")
               )}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Already have an account? </span>
+            <span className="text-muted-foreground">{t("auth.already_have_account")} </span>
             <Link to="/login" className="text-primary hover:underline font-medium">
-              Sign in
+              {t("auth.sign_in_link")}
             </Link>
           </div>
         </CardContent>

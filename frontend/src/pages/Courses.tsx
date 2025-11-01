@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Loader2, BookOpen, KeyRound } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const Courses = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,7 +29,7 @@ const Courses = () => {
       const data = await api.getCourses(0, 50);
       setCourses(data);
     } catch (error: any) {
-      toast.error("Failed to load courses");
+      toast.error(t("courses.failed_load"));
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -45,7 +47,7 @@ const Courses = () => {
       const data = await api.searchCourses(searchQuery);
       setCourses(data);
     } catch (error: any) {
-      toast.error("Search failed");
+      toast.error(t("courses.search_failed"));
       console.error(error);
     } finally {
       setIsSearching(false);
@@ -54,7 +56,7 @@ const Courses = () => {
 
   const handleJoinByCourseId = async () => {
     if (!courseIdInput.trim()) {
-      toast.error("Please enter a Course ID");
+      toast.error(t("courses.enter_course_id_error"));
       return;
     }
 
@@ -65,7 +67,7 @@ const Courses = () => {
       // Navigate to the course detail page
       navigate(`/courses/${courseIdInput.trim()}`);
     } catch (error: any) {
-      toast.error("Course not found. Please check the Course ID");
+      toast.error(t("courses.course_not_found"));
       console.error(error);
     } finally {
       setIsJoining(false);
@@ -88,10 +90,10 @@ const Courses = () => {
           <div className="animate-fade-up">
             <div className="flex items-center gap-3 mb-4">
               <BookOpen className="h-8 w-8" />
-              <h1 className="text-3xl sm:text-4xl font-bold">Course Catalog</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold">{t("courses.title")}</h1>
             </div>
             <p className="text-white/90 text-lg">
-              Explore our comprehensive collection of courses
+              {t("courses.subtitle")}
             </p>
           </div>
         </div>
@@ -105,7 +107,7 @@ const Courses = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search courses..."
+                placeholder={t("courses.search_placeholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
@@ -113,7 +115,7 @@ const Courses = () => {
               />
             </div>
             <Button onClick={handleSearch} disabled={isSearching}>
-              {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+              {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : t("courses.search")}
             </Button>
           </div>
 
@@ -122,23 +124,23 @@ const Courses = () => {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <KeyRound className="h-5 w-5 text-primary" />
-                <CardTitle className="text-base">Have a Course ID?</CardTitle>
+                <CardTitle className="text-base">{t("courses.have_course_id")}</CardTitle>
               </div>
               <CardDescription className="text-sm">
-                Enter the Course ID shared by your teacher to access the course directly
+                {t("courses.course_id_desc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Enter Course ID..."
+                  placeholder={t("courses.enter_course_id")}
                   value={courseIdInput}
                   onChange={(e) => setCourseIdInput(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handleJoinByCourseId()}
                   className="flex-1 font-mono"
                 />
                 <Button onClick={handleJoinByCourseId} disabled={isJoining}>
-                  {isJoining ? <Loader2 className="h-4 w-4 animate-spin" /> : "Access Course"}
+                  {isJoining ? <Loader2 className="h-4 w-4 animate-spin" /> : t("courses.access_course")}
                 </Button>
               </div>
             </CardContent>
@@ -149,9 +151,9 @@ const Courses = () => {
         {courses.length === 0 ? (
           <div className="text-center py-12">
             <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No courses found</h3>
+            <h3 className="text-xl font-semibold mb-2">{t("courses.no_courses_found")}</h3>
             <p className="text-muted-foreground">
-              Try adjusting your search or check back later for new courses
+              {t("courses.no_courses_desc")}
             </p>
           </div>
         ) : (
@@ -191,7 +193,7 @@ const Courses = () => {
                   <div className="space-y-3">
                     {course.topics && course.topics.length > 0 && (
                       <div className="space-y-1">
-                        <p className="text-sm font-medium">Topics covered:</p>
+                        <p className="text-sm font-medium">{t("courses.topics_covered")}</p>
                         <div className="flex flex-wrap gap-1">
                           {course.topics.slice(0, 3).map((topic, idx) => (
                             <Badge key={idx} variant="outline" className="text-xs">
@@ -200,7 +202,7 @@ const Courses = () => {
                           ))}
                           {course.topics.length > 3 && (
                             <Badge variant="outline" className="text-xs">
-                              +{course.topics.length - 3} more
+                              +{course.topics.length - 3} {t("courses.more")}
                             </Badge>
                           )}
                         </div>
@@ -208,14 +210,14 @@ const Courses = () => {
                     )}
                     
                     <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t">
-                      <span>{course.topics?.length || 0} Topics</span>
+                      <span>{course.topics?.length || 0} {t("dashboard.topics")}</span>
                       <span>
-                        {course.topics?.reduce((acc, t) => acc + t.estimated_duration, 0) || 0} min
+                        {course.topics?.reduce((acc, t) => acc + t.estimated_duration, 0) || 0} {t("dashboard.min")}
                       </span>
                     </div>
                     
                     <Button className="w-full" asChild>
-                      <Link to={`/courses/${course.id}`}>View Course</Link>
+                      <Link to={`/courses/${course.id}`}>{t("courses.view_course")}</Link>
                     </Button>
                   </div>
                 </CardContent>

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 const Navigation = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -23,6 +24,7 @@ const Navigation = () => {
   };
 
   const isActive = (path: string) => location.pathname === path;
+  const { t } = useTranslation();
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -45,7 +47,7 @@ const Navigation = () => {
                 >
                   <Link to="/dashboard">
                     <LayoutDashboard className="h-4 w-4 mr-2" />
-                    Dashboard
+                    {t("nav.dashboard")}
                   </Link>
                 </Button>
                 <Button
@@ -55,7 +57,7 @@ const Navigation = () => {
                 >
                   <Link to="/courses">
                     <BookOpen className="h-4 w-4 mr-2" />
-                    Courses
+                    {t("nav.courses")}
                   </Link>
                 </Button>
                 <Button
@@ -65,7 +67,7 @@ const Navigation = () => {
                 >
                   <Link to="/chatbot">
                     <MessageSquare className="h-4 w-4 mr-2" />
-                    AI Chat
+                    {t("nav.ai_chat")}
                   </Link>
                 </Button>
                 <Button
@@ -75,7 +77,7 @@ const Navigation = () => {
                 >
                   <Link to="/youtube-courses">
                     <Youtube className="h-4 w-4 mr-2" />
-                    Video Courses
+                    {t("nav.video_courses")}
                   </Link>
                 </Button>
                 {user?.role === "student" && (
@@ -86,7 +88,7 @@ const Navigation = () => {
                   >
                     <Link to="/adaptive-learning">
                       <Brain className="h-4 w-4 mr-2" />
-                      Adaptive
+                        {t("nav.adaptive")}
                     </Link>
                   </Button>
                 )}
@@ -98,7 +100,7 @@ const Navigation = () => {
                   >
                     <Link to="/admin">
                       <Shield className="h-4 w-4 mr-2" />
-                      Admin
+                        {t("nav.admin")}
                     </Link>
                   </Button>
                 )}
@@ -131,38 +133,38 @@ const Navigation = () => {
                   <DropdownMenuItem asChild className="md:hidden">
                     <Link to="/courses">
                       <BookOpen className="mr-2 h-4 w-4" />
-                      Courses
+                        {t("nav.courses")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="md:hidden">
                     <Link to="/chatbot">
                       <MessageSquare className="mr-2 h-4 w-4" />
-                      AI Chat
+                        {t("nav.ai_chat")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="md:hidden">
                     <Link to="/youtube-courses">
                       <Youtube className="mr-2 h-4 w-4" />
-                      Video Courses
+                        {t("nav.video_courses")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="md:hidden">
                     <Link to="/scholarships">
                       <Award className="mr-2 h-4 w-4" />
-                      Scholarships
+                        {t("nav.scholarships")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="md:hidden">
                     <Link to="/voice-chat">
                       <Radio className="mr-2 h-4 w-4" />
-                      Voice Assistant
+                        {t("nav.voice_assistant")}
                     </Link>
                   </DropdownMenuItem>
                   {user?.role === "admin" && (
                     <DropdownMenuItem asChild className="md:hidden">
                       <Link to="/admin">
                         <Shield className="mr-2 h-4 w-4" />
-                        Admin Panel
+                          {t("nav.admin_panel")}
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -170,13 +172,13 @@ const Navigation = () => {
                   <DropdownMenuItem asChild>
                     <Link to="/profile">
                       <User className="mr-2 h-4 w-4" />
-                      Profile
+                      {t("nav.profile")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    Logout
+                    {t("nav.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -186,10 +188,10 @@ const Navigation = () => {
               <LanguageSwitcher />
               <ThemeToggle />
               <Button variant="ghost" asChild size="sm">
-                <Link to="/login">Login</Link>
+                <Link to="/login">{t("nav.login")}</Link>
               </Button>
               <Button asChild size="sm">
-                <Link to="/register">Sign Up</Link>
+                <Link to="/register">{t("nav.signup")}</Link>
               </Button>
             </div>
           )}

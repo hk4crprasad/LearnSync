@@ -7,8 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, GraduationCap, UserCircle, BookOpen, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 const Login = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [selectedRole, setSelectedRole] = useState<"student" | "teacher" | "admin">("student");
@@ -37,16 +39,16 @@ const Login = () => {
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
             <GraduationCap className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+          <CardTitle className="text-2xl font-bold">{t("auth.welcome_back")}</CardTitle>
           <CardDescription>
-            Sign in to your account to continue learning
+            {t("auth.sign_in_description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Role Selection */}
             <div className="space-y-2">
-              <Label>I am a</Label>
+              <Label>{t("auth.i_am_a")}</Label>
               <div className="grid grid-cols-3 gap-2">
                 <Button
                   type="button"
@@ -59,7 +61,7 @@ const Login = () => {
                   disabled={isLoading}
                 >
                   <UserCircle className="h-5 w-5" />
-                  <span className="text-xs">Student</span>
+                  <span className="text-xs">{t("auth.student")}</span>
                 </Button>
                 
                 <Button
@@ -73,7 +75,7 @@ const Login = () => {
                   disabled={isLoading}
                 >
                   <BookOpen className="h-5 w-5" />
-                  <span className="text-xs">Teacher</span>
+                  <span className="text-xs">{t("auth.teacher")}</span>
                 </Button>
                 
                 <Button
@@ -87,17 +89,17 @@ const Login = () => {
                   disabled={isLoading}
                 >
                   <Shield className="h-5 w-5" />
-                  <span className="text-xs">Admin</span>
+                  <span className="text-xs">{t("auth.admin")}</span>
                 </Button>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("auth.email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder={t("auth.email_placeholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -106,11 +108,11 @@ const Login = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t("auth.password_placeholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -126,18 +128,18 @@ const Login = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  {t("auth.signing_in")}
                 </>
               ) : (
-                "Sign In"
+                t("auth.sign_in")
               )}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
+            <span className="text-muted-foreground">{t("auth.no_account")} </span>
             <Link to="/register" className="text-primary hover:underline font-medium">
-              Sign up
+              {t("auth.sign_up")}
             </Link>
           </div>
         </CardContent>
