@@ -62,6 +62,29 @@ const Dashboard = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* AI Practice Quick Action */}
+        <Card className="mb-6 animate-fade-up border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg">AI Practice Assessment</h3>
+                  <p className="text-sm text-muted-foreground">Generate personalized questions on any topic</p>
+                </div>
+              </div>
+              <Link to="/practice">
+                <Button className="gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Start Practice
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Stats Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="animate-scale-in border-primary/20 hover:shadow-lg transition-shadow">

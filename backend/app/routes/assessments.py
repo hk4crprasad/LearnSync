@@ -44,9 +44,9 @@ async def get_assessment(
 @router.post("/generate-questions")
 async def generate_questions(
     request: dict,
-    current_user: dict = Depends(require_teacher)
+    current_user: dict = Depends(get_current_user)
 ):
-    """Generate AI-powered questions for assessment"""
+    """Generate AI-powered questions for assessment (Available to all authenticated users)"""
     try:
         from app.utils.ai_client import ai_client
         
@@ -58,6 +58,10 @@ async def generate_questions(
         
         if not topic:
             raise HTTPException(status_code=400, detail="Topic is required")
+        
+        # Limit students to 10 questions per generation
+        if current_user["role"] == "student":
+            num_questions = min(num_questions, 10)
         
         questions = ai_client.generate_questions(
             topic=topic,

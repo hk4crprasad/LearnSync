@@ -4,7 +4,7 @@ import { api, Course, Assessment } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ArrowLeft, Clock, BookOpen, CheckCircle2, FileText, Copy, KeyRound } from "lucide-react";
+import { Loader2, ArrowLeft, Clock, BookOpen, CheckCircle2, FileText, Copy, KeyRound, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
@@ -172,6 +172,33 @@ const CourseDetail = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* AI Practice Card for Students */}
+            {user?.role === "student" && (
+              <Card className="animate-fade-up border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
+                <CardHeader>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">AI Practice Session</CardTitle>
+                      <CardDescription>
+                        Generate personalized practice questions with AI
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Button className="w-full gap-2" size="lg" asChild>
+                    <Link to={`/practice?courseId=${id}`}>
+                      <Sparkles className="h-4 w-4" />
+                      Start AI Practice
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="animate-fade-up">
               <CardHeader>
                 <CardTitle>Course Content</CardTitle>

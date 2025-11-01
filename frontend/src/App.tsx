@@ -22,6 +22,7 @@ import TakeAssessment from "./pages/TakeAssessment";
 import AssessmentResult from "./pages/AssessmentResult";
 import NotFound from "./pages/NotFound";
 import RoleDashboard from "./pages/RoleDashboard";
+import PracticeAssessment from "./pages/PracticeAssessment";
 
 const queryClient = new QueryClient();
 
@@ -130,6 +131,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <AssessmentResult />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/practice"
+              element={
+                <ProtectedRoute>
+                  <PracticeAssessment />
                 </ProtectedRoute>
               }
             />
