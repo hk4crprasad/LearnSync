@@ -9,6 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import ThemeToggle from "@/components/ThemeToggle";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const Navigation = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -29,7 +31,7 @@ const Navigation = () => {
           <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
             <GraduationCap className="h-6 w-6 text-white" />
           </div>
-          <span className="font-bold text-xl hidden sm:inline">EduPlatform</span>
+          <span className="font-bold text-xl hidden sm:inline">Edusaathi</span>
         </Link>
 
         <div className="flex items-center gap-4">
@@ -101,6 +103,9 @@ const Navigation = () => {
                   </Button>
                 )}
               </div>
+
+              <LanguageSwitcher />
+              <ThemeToggle />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -178,6 +183,8 @@ const Navigation = () => {
             </>
           ) : (
             <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <ThemeToggle />
               <Button variant="ghost" asChild size="sm">
                 <Link to="/login">Login</Link>
               </Button>
