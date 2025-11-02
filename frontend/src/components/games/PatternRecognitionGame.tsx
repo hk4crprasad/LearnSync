@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Zap, Trophy, Star, Play, RotateCcw } from "lucide-react";
+import { Zap, Trophy, Star, Play, RotateCcw, XCircle } from "lucide-react";
 
 interface PatternGameProps {
   difficulty: "Easy" | "Medium" | "Hard";
@@ -26,8 +26,9 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
   const [activeButton, setActiveButton] = useState<number | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
 
-  const maxLevel = difficulty === "Easy" ? 8 : difficulty === "Medium" ? 12 : 15;
-  const numButtons = difficulty === "Easy" ? 4 : difficulty === "Medium" ? 6 : 9;
+  // Adjusted for younger children - Easy mode optimized for 6-9 year olds
+  const maxLevel = difficulty === "Easy" ? 6 : difficulty === "Medium" ? 12 : 15;
+  const numButtons = difficulty === "Easy" ? 3 : difficulty === "Medium" ? 6 : 9;
   const pointsPerLevel = 25;
 
   // Button colors and sounds based on subject
@@ -163,14 +164,24 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
 
   if (!gameStarted) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center space-y-6">
+      <div className="flex flex-col items-center justify-center p-12 text-center space-y-6 relative">
+        {/* Close Button */}
+        <Button
+          onClick={onClose}
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-4 h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+        >
+          <XCircle className="h-5 w-5" />
+        </Button>
+
         <Zap className="h-24 w-24 text-yellow-500" />
         <div>
-          <h2 className="text-4xl font-bold mb-3">Pattern Master</h2>
-          <p className="text-lg text-gray-700 dark:text-gray-300 mb-2">
+          <h2 className="text-4xl font-bold mb-3 text-slate-800 dark:text-slate-100">Pattern Master</h2>
+          <p className="text-lg font-medium text-slate-700 dark:text-slate-200 mb-2">
             Watch the pattern and repeat it!
           </p>
-          <p className="text-sm text-gray-700 dark:text-gray-300">
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
             Similar to Simon Says - memorize and repeat the sequence
           </p>
         </div>
@@ -180,29 +191,29 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
             <div className="flex items-start gap-2">
               <span className="text-2xl">👀</span>
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white">Watch</p>
-                <p className="text-sm text-gray-700 dark:text-gray-300">Observe the flashing pattern</p>
+                <p className="font-bold text-slate-800 dark:text-slate-100">Watch</p>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Observe the flashing pattern</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-2xl">🧠</span>
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white">Remember</p>
-                <p className="text-sm text-gray-700 dark:text-gray-300">Memorize the sequence</p>
+                <p className="font-bold text-slate-800 dark:text-slate-100">Remember</p>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Memorize the sequence</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-2xl">👆</span>
               <div>
-                <p className="font-semibold text-gray-900 dark:text-white">Repeat</p>
-                <p className="text-sm text-gray-700 dark:text-gray-300">Click the buttons in order</p>
+                <p className="font-bold text-slate-800 dark:text-slate-100">Repeat</p>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Click the buttons in order</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <div className="space-y-2">
-          <Badge variant="outline" className="text-lg px-4 py-2">
+          <Badge variant="outline" className="text-lg px-4 py-2 bg-white dark:bg-slate-800 border-2 font-semibold text-slate-700 dark:text-slate-200">
             {numButtons} Buttons • Level 1-{maxLevel} • {pointsPerLevel} pts/level
           </Badge>
         </div>
@@ -226,14 +237,14 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
         className="flex flex-col items-center justify-center p-8 text-center space-y-6"
       >
         <Trophy className="h-24 w-24 text-yellow-500" />
-        <h2 className="text-4xl font-bold">
+        <h2 className="text-4xl font-bold text-gray-900 dark:text-white">
           {isWinner ? "Perfect Memory! 🎉" : "Good Try!"}
         </h2>
         <div className="space-y-2">
           <p className="text-2xl font-semibold text-primary">
             Score: {score} / {maxLevel * pointsPerLevel}
           </p>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-gray-700 dark:text-gray-300">
             Level {level} Reached • {percentage}% Complete
           </p>
         </div>
@@ -251,7 +262,7 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
   }
 
   const progress = ((level - 1) / maxLevel) * 100;
-  const gridCols = numButtons === 4 ? "grid-cols-2" : numButtons === 6 ? "grid-cols-3" : "grid-cols-3";
+  const gridCols = numButtons === 3 ? "grid-cols-3" : numButtons === 6 ? "grid-cols-3" : "grid-cols-3";
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6 p-4">
@@ -260,18 +271,28 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Zap className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-bold">Pattern Master</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Pattern Master</h2>
           </div>
-          <Badge variant="outline" className="text-lg px-4 py-2">
-            <Star className="h-4 w-4 mr-1" />
-            {score} pts
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-lg px-4 py-2 bg-white dark:bg-slate-800 border-2 font-semibold">
+              <Star className="h-4 w-4 mr-1 text-yellow-500" />
+              <span className="text-blue-600 dark:text-blue-400">{score} pts</span>
+            </Badge>
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+            >
+              <XCircle className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
         
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
-            <span>Level {level} of {maxLevel}</span>
-            <span>{Math.round(progress)}% Complete</span>
+          <div className="flex justify-between text-sm font-semibold">
+            <span className="text-slate-700 dark:text-slate-200">Level {level} of {maxLevel}</span>
+            <span className="text-blue-600 dark:text-blue-400">{Math.round(progress)}% Complete</span>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
@@ -280,11 +301,11 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
       {/* Status */}
       <Card className={`${isPlaying ? "bg-yellow-500/10 border-yellow-500" : isUserTurn ? "bg-green-500/10 border-green-500" : "bg-blue-500/10 border-blue-500"} transition-all`}>
         <CardContent className="pt-6">
-          <p className="text-center text-lg font-semibold text-gray-900 dark:text-white">
+          <p className="text-center text-lg font-bold text-slate-800 dark:text-slate-100">
             {isPlaying ? "👀 Watch the pattern..." : isUserTurn ? "👆 Your turn! Repeat the pattern" : "🎮 Get ready..."}
           </p>
           {isUserTurn && (
-            <p className="text-center text-sm text-gray-700 dark:text-gray-300 mt-2">
+            <p className="text-center text-sm font-semibold text-slate-700 dark:text-slate-200 mt-2">
               {userPattern.length} of {pattern.length} buttons clicked
             </p>
           )}
@@ -316,7 +337,7 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
       {/* Instructions */}
       <Card className="bg-muted/50">
         <CardContent className="pt-6">
-          <p className="text-center text-sm text-gray-700 dark:text-gray-300">
+          <p className="text-center text-sm font-medium text-slate-700 dark:text-slate-200">
             💡 Each level adds one more button to remember. Listen to the sounds and watch the lights!
           </p>
         </CardContent>

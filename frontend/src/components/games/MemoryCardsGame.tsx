@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Brain, Trophy, Star, Timer } from "lucide-react";
+import { Brain, Trophy, Star, Timer, XCircle } from "lucide-react";
 
 interface MemoryCardsGameProps {
   difficulty: "Easy" | "Medium" | "Hard";
@@ -33,7 +33,8 @@ const MemoryCardsGame = ({ difficulty, subject = "General", onComplete, onClose 
   const [gameComplete, setGameComplete] = useState(false);
 
   const pointsPerMatch = 20;
-  const totalPairs = difficulty === "Easy" ? 6 : difficulty === "Medium" ? 8 : 10;
+  // Fewer pairs for younger children - Easy mode optimized for 6-9 year olds
+  const totalPairs = difficulty === "Easy" ? 5 : difficulty === "Medium" ? 8 : 10;
 
   useEffect(() => {
     generateCards();
@@ -209,7 +210,7 @@ const MemoryCardsGame = ({ difficulty, subject = "General", onComplete, onClose 
           }
         }, 600);
       } else {
-        // No match
+        // No match - Keep cards visible for 1.5 seconds for better memorization
         setTimeout(() => {
           const resetCards = [...cards];
           resetCards[first].flipped = false;
@@ -217,7 +218,7 @@ const MemoryCardsGame = ({ difficulty, subject = "General", onComplete, onClose 
           setCards(resetCards);
           setFlippedCards([]);
           setIsChecking(false);
-        }, 1000);
+        }, 1500);
       }
     }
   };
@@ -242,15 +243,15 @@ const MemoryCardsGame = ({ difficulty, subject = "General", onComplete, onClose 
         className="flex flex-col items-center justify-center p-8 text-center space-y-6"
       >
         <Trophy className="h-24 w-24 text-yellow-500" />
-        <h2 className="text-4xl font-bold">Memory Master!</h2>
+        <h2 className="text-4xl font-bold text-gray-900 dark:text-white">Memory Master!</h2>
         <div className="space-y-2">
           <p className="text-2xl font-semibold text-primary">
             Score: {finalScore} points
           </p>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-gray-700 dark:text-gray-300">
             {accuracy}% Accuracy • {moves} Moves
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-700 dark:text-gray-300">
             ⏱️ Time: {timeElapsed}s • ⚡ Time Bonus: +{timeBonus} pts
           </p>
         </div>
@@ -276,24 +277,32 @@ const MemoryCardsGame = ({ difficulty, subject = "General", onComplete, onClose 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Brain className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-bold">Memory Cards</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Memory Cards</h2>
           </div>
-          <div className="flex items-center gap-4">
-            <Badge variant="outline" className="text-lg px-4 py-2">
-              <Timer className="h-4 w-4 mr-1" />
-              {timeElapsed}s
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-lg px-4 py-2 bg-white dark:bg-slate-800 border-2 font-semibold">
+              <Timer className="h-4 w-4 mr-1 text-purple-500" />
+              <span className="text-purple-600 dark:text-purple-400">{timeElapsed}s</span>
             </Badge>
-            <Badge variant="outline" className="text-lg px-4 py-2">
-              <Star className="h-4 w-4 mr-1" />
-              {score} pts
+            <Badge variant="outline" className="text-lg px-4 py-2 bg-white dark:bg-slate-800 border-2 font-semibold">
+              <Star className="h-4 w-4 mr-1 text-yellow-500" />
+              <span className="text-blue-600 dark:text-blue-400">{score} pts</span>
             </Badge>
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+            >
+              <XCircle className="h-5 w-5" />
+            </Button>
           </div>
         </div>
         
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
-            <span>Matched: {matchedPairs} of {totalPairs}</span>
-            <span>Moves: {moves}</span>
+          <div className="flex justify-between text-sm font-semibold">
+            <span className="text-slate-700 dark:text-slate-200">Matched: {matchedPairs} of {totalPairs}</span>
+            <span className="text-blue-600 dark:text-blue-400">Moves: {moves}</span>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
@@ -302,7 +311,7 @@ const MemoryCardsGame = ({ difficulty, subject = "General", onComplete, onClose 
       {/* Instructions */}
       <Card className="bg-primary/5 border-primary/20">
         <CardContent className="pt-6">
-          <p className="text-center text-sm text-gray-700 dark:text-gray-300">
+          <p className="text-center text-sm font-medium text-slate-700 dark:text-slate-200">
             💡 Click cards to flip them. Match pairs to win! Fewer moves = higher score
           </p>
         </CardContent>
@@ -342,7 +351,7 @@ const MemoryCardsGame = ({ difficulty, subject = "General", onComplete, onClose 
                 {card.flipped || card.matched ? (
                   <div className="text-center space-y-2">
                     <div className="text-4xl">{card.emoji}</div>
-                    <div className="text-xs font-semibold px-2 text-gray-900 dark:text-white">{card.content}</div>
+                    <div className="text-xs font-bold px-2 text-slate-800 dark:text-slate-100">{card.content}</div>
                   </div>
                 ) : (
                   <div className="text-4xl">❓</div>

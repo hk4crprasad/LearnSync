@@ -7,6 +7,10 @@ import MatchingPairsGame from "./MatchingPairsGame";
 import MemoryCardsGame from "./MemoryCardsGame";
 import PatternRecognitionGame from "./PatternRecognitionGame";
 import QuizGame from "./QuizGame";
+import { PuzzleGame } from "./PuzzleGame";
+import { SortingGame } from "./SortingGame";
+import { DragDropGame } from "./DragDropGame";
+import { FillBlanksGame } from "./FillBlanksGame";
 import { VisualGameTemplate } from "@/utils/visualGameTypes";
 
 interface VisualGamePlayerProps {
@@ -26,58 +30,72 @@ const VisualGamePlayer = ({ game, onClose, onComplete }: VisualGamePlayerProps) 
     };
   }, []);
   
-  const handleComplete = (score: number, maxScore: number) => {
+  const handleComplete = (score: number) => {
     if (onComplete) {
-      onComplete(score, maxScore);
+      onComplete(score, game.maxPoints);
     }
   };
 
   const renderGame = () => {
     const commonProps = {
-      difficulty: game.difficulty,
-      subject: game.subjects?.[0] || "General",
+      game: game,
       onComplete: handleComplete,
       onClose: onClose,
     };
 
     switch (game.gameType) {
       case "word-scramble":
-        return <WordScrambleGame {...commonProps} />;
+        return <WordScrambleGame 
+          difficulty={game.difficulty}
+          subject={game.subjects?.[0] || "General"}
+          onComplete={(score, maxScore) => onComplete?.(score, maxScore)}
+          onClose={onClose}
+        />;
       
       case "matching-pairs":
-        return <MatchingPairsGame {...commonProps} />;
+        return <MatchingPairsGame 
+          difficulty={game.difficulty}
+          subject={game.subjects?.[0] || "General"}
+          onComplete={(score, maxScore) => onComplete?.(score, maxScore)}
+          onClose={onClose}
+        />;
       
       case "memory-cards":
-        return <MemoryCardsGame {...commonProps} />;
+        return <MemoryCardsGame 
+          difficulty={game.difficulty}
+          subject={game.subjects?.[0] || "General"}
+          onComplete={(score, maxScore) => onComplete?.(score, maxScore)}
+          onClose={onClose}
+        />;
       
       case "pattern-recognition":
-        return <PatternRecognitionGame {...commonProps} />;
+        return <PatternRecognitionGame 
+          difficulty={game.difficulty}
+          subject={game.subjects?.[0] || "General"}
+          onComplete={(score, maxScore) => onComplete?.(score, maxScore)}
+          onClose={onClose}
+        />;
       
       case "quiz":
-        return <QuizGame {...commonProps} />;
+        return <QuizGame 
+          difficulty={game.difficulty}
+          subject={game.subjects?.[0] || "General"}
+          onComplete={(score, maxScore) => onComplete?.(score, maxScore)}
+          onClose={onClose}
+        />;
       
-      // Placeholder for other game types
-      case "drag-drop":
-      case "fill-blanks":
+      // NEW PERSONALIZED GAMES
       case "puzzle":
+        return <PuzzleGame {...commonProps} />;
+      
       case "sorting":
-        return (
-          <div className="flex flex-col items-center justify-center p-12 text-center space-y-4">
-            <div className="text-6xl mb-4">{game.emoji}</div>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{game.title}</h2>
-            <p className="text-lg text-gray-700 dark:text-gray-300 max-w-md">
-              {game.description}
-            </p>
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-4">
-              <p className="text-yellow-700 dark:text-yellow-400 font-medium">
-                🚧 Coming Soon! This game is under development.
-              </p>
-            </div>
-            <Button onClick={onClose} size="lg" className="mt-6">
-              Back to Games
-            </Button>
-          </div>
-        );
+        return <SortingGame {...commonProps} />;
+      
+      case "drag-drop":
+        return <DragDropGame {...commonProps} />;
+      
+      case "fill-blanks":
+        return <FillBlanksGame {...commonProps} />;
       
       default:
         return (

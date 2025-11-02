@@ -27,274 +27,260 @@ export interface VisualGameTemplate {
 }
 
 /**
- * Generate visual educational games based on student's grade/age level
+ * Generate PERSONALIZED visual educational games based on student's unique profile
+ * Each student gets different games based on their interests, goals, and age
  */
 export const generateVisualGames = (profile: UserProfile): VisualGameTemplate[] => {
   const { ageGroup, interests, learningGoals } = profile;
   const games: VisualGameTemplate[] = [];
 
-  // Determine difficulty based on age
+  // Determine difficulty based on age - more granular for younger children
   const age = getAgeFromGroup(ageGroup);
-  const difficulty = age <= 11 ? "Easy" : age <= 14 ? "Medium" : "Hard";
+  let difficulty: "Easy" | "Medium" | "Hard";
+  
+  if (age <= 9) {
+    difficulty = "Easy";
+  } else if (age <= 11) {
+    difficulty = "Easy";
+  } else if (age <= 14) {
+    difficulty = "Medium";
+  } else {
+    difficulty = "Hard";
+  }
 
-  // Interest mapping to subjects
-  const interestToSubject: Record<string, string> = {
-    "Environment": "Environment",
-    "Agriculture": "Agriculture",
-    "Technology": "Technology",
-    "Math": "Math",
-    "Art": "Art",
-    "Storytelling": "English",
-    "Economy": "Economy",
-    "Teamwork": "Teamwork",
-    "Design": "Design",
-    "Science": "Science"
+  // Interest mapping to subjects with game type preferences
+  const interestToGames: Record<string, { subjects: string[]; preferredGames: VisualGameType[] }> = {
+    "Environment": {
+      subjects: ["Environment", "Science"],
+      preferredGames: ["matching-pairs", "quiz", "sorting", "memory-cards"]
+    },
+    "Agriculture": {
+      subjects: ["Agriculture", "Science"],
+      preferredGames: ["matching-pairs", "memory-cards", "quiz", "word-scramble"]
+    },
+    "Technology": {
+      subjects: ["Technology", "Science"],
+      preferredGames: ["pattern-recognition", "quiz", "puzzle", "word-scramble"]
+    },
+    "Math": {
+      subjects: ["Math"],
+      preferredGames: ["pattern-recognition", "puzzle", "quiz", "word-scramble"]
+    },
+    "Art": {
+      subjects: ["Art", "Design"],
+      preferredGames: ["memory-cards", "matching-pairs", "puzzle", "pattern-recognition"]
+    },
+    "Storytelling": {
+      subjects: ["English", "Language"],
+      preferredGames: ["word-scramble", "fill-blanks", "quiz", "matching-pairs"]
+    },
+    "Economy": {
+      subjects: ["Economy", "Math"],
+      preferredGames: ["quiz", "matching-pairs", "word-scramble", "puzzle"]
+    },
+    "Teamwork": {
+      subjects: ["Teamwork", "Social"],
+      preferredGames: ["matching-pairs", "quiz", "memory-cards", "pattern-recognition"]
+    },
+    "Design": {
+      subjects: ["Design", "Art"],
+      preferredGames: ["pattern-recognition", "memory-cards", "puzzle", "matching-pairs"]
+    },
+    "Science": {
+      subjects: ["Science"],
+      preferredGames: ["quiz", "matching-pairs", "memory-cards", "word-scramble"]
+    }
   };
 
-  // Get primary subject from interests
-  const primarySubjects = interests?.map(interest => interestToSubject[interest] || "General") || ["General"];
-  const mainSubject = primarySubjects[0] || "General";
-
-  // === PATTERN RECOGNITION (Simon Says style) ===
-  games.push({
-    id: "pattern-recognition",
-    title: "Pattern Master 🎯",
-    emoji: "🎯",
-    description: "Watch the pattern and repeat it! Test your memory like Simon Says!",
-    gameType: "pattern-recognition",
-    difficulty,
-    ageGroup: [ageGroup],
-    subjects: primarySubjects,
-    pointsPerCorrect: 25,
-    maxPoints: difficulty === "Easy" ? 200 : difficulty === "Medium" ? 300 : 375,
-    color: "from-yellow-400 to-orange-500",
-    instructions: "Watch the lights flash, then repeat the pattern by clicking the buttons in order!"
-  });
-
-  // === MEMORY CARDS ===
-  games.push({
-    id: "memory-cards",
-    title: `${mainSubject} Memory Match 🃏`,
-    emoji: "🃏",
-    description: `Flip cards and match ${mainSubject.toLowerCase()} pairs! Train your memory!`,
-    gameType: "memory-cards",
-    difficulty,
-    ageGroup: [ageGroup],
-    subjects: primarySubjects,
-    pointsPerCorrect: 20,
-    maxPoints: difficulty === "Easy" ? 120 : difficulty === "Medium" ? 160 : 200,
-    color: "from-purple-400 to-pink-500",
-    instructions: "Click two cards to flip them. Match all pairs to win!"
-  });
-
-  // === WORD SCRAMBLE ===
-  games.push({
-    id: "word-scramble",
-    title: `${mainSubject} Word Scramble 🔤`,
-    emoji: "🔤",
-    description: `Unscramble ${mainSubject.toLowerCase()} terms and boost your vocabulary!`,
-    gameType: "word-scramble",
-    difficulty,
-    ageGroup: [ageGroup],
-    subjects: primarySubjects,
-    pointsPerCorrect: 10,
-    maxPoints: difficulty === "Easy" ? 100 : difficulty === "Medium" ? 80 : 60,
-    color: "from-green-400 to-emerald-500",
-    instructions: "Rearrange the jumbled letters to form the correct word!"
-  });
-
-  // === MATCHING PAIRS ===
-  games.push({
-    id: "matching-pairs",
-    title: `${mainSubject} Matching 🎴`,
-    emoji: "🎴",
-    description: `Match ${mainSubject.toLowerCase()} concepts with their definitions!`,
-    gameType: "matching-pairs",
-    difficulty,
-    ageGroup: [ageGroup],
-    subjects: primarySubjects,
-    pointsPerCorrect: 15,
-    maxPoints: difficulty === "Easy" ? 90 : difficulty === "Medium" ? 120 : 150,
-    color: "from-blue-400 to-cyan-500",
-    instructions: "Select an item from the left, then match it with the correct item on the right!"
-  });
-
-  // === QUIZ CHALLENGE ===
-  games.push({
-    id: "quiz-challenge",
-    title: `${mainSubject} Quiz 📝`,
-    emoji: "📝",
-    description: `Test your ${mainSubject.toLowerCase()} knowledge with multiple choice questions!`,
-    gameType: "quiz",
-    difficulty,
-    ageGroup: [ageGroup],
-    subjects: primarySubjects,
-    pointsPerCorrect: 10,
-    maxPoints: difficulty === "Easy" ? 100 : difficulty === "Medium" ? 80 : 60,
-    color: "from-orange-400 to-red-500",
-    instructions: "Choose the correct answer for each question. Learn from explanations!"
-  });
-
-  // === ADDITIONAL GAMES FOR SPECIFIC INTERESTS ===
-
-  // Environment-specific games
-  if (interests?.includes("Environment")) {
-    games.push({
-      id: "environment-sorting",
-      title: "Eco Sorting Game ♻️",
-      emoji: "♻️",
-      description: "Sort items into recyclable, compostable, or trash categories!",
-      gameType: "sorting",
-      difficulty,
-      ageGroup: [ageGroup],
-      subjects: ["Environment"],
-      pointsPerCorrect: 15,
-      maxPoints: 150,
-      color: "from-green-500 to-teal-500",
-      instructions: "Drag items to the correct bin to help save the environment!"
-    });
-  }
-
-  // Agriculture-specific games
-  if (interests?.includes("Agriculture")) {
-    games.push({
-      id: "agriculture-timeline",
-      title: "Farming Seasons 🌾",
-      emoji: "🌾",
-      description: "Arrange farming activities in the correct seasonal order!",
-      gameType: "drag-drop",
-      difficulty,
-      ageGroup: [ageGroup],
-      subjects: ["Agriculture"],
-      pointsPerCorrect: 15,
-      maxPoints: 150,
-      color: "from-amber-400 to-yellow-500",
-      instructions: "Drag farming activities to arrange them in the correct order!"
-    });
-  }
-
-  // Technology-specific games
-  if (interests?.includes("Technology")) {
-    games.push({
-      id: "tech-coding",
-      title: "Code Sequence 💻",
-      emoji: "💻",
-      description: "Arrange code blocks in the correct order to solve problems!",
-      gameType: "drag-drop",
-      difficulty,
-      ageGroup: [ageGroup],
-      subjects: ["Technology"],
-      pointsPerCorrect: 20,
-      maxPoints: 160,
-      color: "from-indigo-400 to-purple-500",
-      instructions: "Drag code blocks to create the correct sequence!"
-    });
-  }
-
-  // Math-specific games
-  if (interests?.includes("Math")) {
-    games.push({
-      id: "math-puzzle",
-      title: "Number Puzzle 🔢",
-      emoji: "🔢",
-      description: "Solve mathematical puzzles and patterns!",
-      gameType: "puzzle",
-      difficulty,
-      ageGroup: [ageGroup],
-      subjects: ["Math"],
-      pointsPerCorrect: 25,
-      maxPoints: 150,
-      color: "from-cyan-400 to-blue-500",
-      instructions: "Complete the puzzle by solving math problems!"
-    });
-  }
-
-  // Art & Design-specific games
-  if (interests?.includes("Art") || interests?.includes("Design")) {
-    games.push({
-      id: "art-pattern",
-      title: "Art Pattern Match 🎨",
-      emoji: "🎨",
-      description: "Identify and complete artistic patterns!",
-      gameType: "pattern-recognition",
-      difficulty,
-      ageGroup: [ageGroup],
-      subjects: ["Art", "Design"],
-      pointsPerCorrect: 20,
-      maxPoints: 160,
-      color: "from-pink-400 to-rose-500",
-      instructions: "Watch the color pattern and recreate it!"
-    });
-  }
-
-  // Storytelling-specific games
-  if (interests?.includes("Storytelling")) {
-    games.push({
-      id: "story-sequence",
-      title: "Story Builder 📚",
-      emoji: "📚",
-      description: "Arrange story events in the correct sequence!",
-      gameType: "drag-drop",
-      difficulty,
-      ageGroup: [ageGroup],
-      subjects: ["English", "Storytelling"],
-      pointsPerCorrect: 15,
-      maxPoints: 150,
-      color: "from-violet-400 to-purple-500",
-      instructions: "Drag story parts to create the correct narrative sequence!"
-    });
-  }
-
-  // Teamwork-specific games
-  if (interests?.includes("Teamwork") || learningGoals?.includes("Improve teamwork skills")) {
-    games.push({
-      id: "teamwork-scenarios",
-      title: "Team Builder 🤝",
-      emoji: "🤝",
-      description: "Learn teamwork through interactive scenarios!",
-      gameType: "quiz",
-      difficulty,
-      ageGroup: [ageGroup],
-      subjects: ["Teamwork"],
-      pointsPerCorrect: 10,
-      maxPoints: 100,
-      color: "from-teal-400 to-cyan-500",
-      instructions: "Choose the best teamwork approach for each situation!"
-    });
-  }
-
-  // Economy-specific games  
-  if (interests?.includes("Economy")) {
-    games.push({
-      id: "economy-budget",
-      title: "Budget Master 💰",
-      emoji: "💰",
-      description: "Learn to manage money and make economic decisions!",
-      gameType: "quiz",
-      difficulty,
-      ageGroup: [ageGroup],
-      subjects: ["Economy"],
-      pointsPerCorrect: 15,
-      maxPoints: 150,
-      color: "from-yellow-500 to-amber-600",
-      instructions: "Make the best financial choices and learn about economics!"
-    });
-  }
-
-  // Filter games if user has specific interests (show relevant ones first)
-  if (interests && interests.length > 0) {
-    const relevantGames = games.filter(game => 
-      game.subjects.some(subject => 
-        primarySubjects.includes(subject) || subject === "General"
-      )
-    );
+  // PERSONALIZATION: Generate games based on student's specific interests
+  const selectedInterests = interests || ["Science"]; // Default to Science if no interests
+  
+  selectedInterests.forEach((interest, index) => {
+    const gameConfig = interestToGames[interest] || interestToGames["Science"];
+    const subjects = gameConfig.subjects;
+    const preferredGames = gameConfig.preferredGames;
     
-    // Return relevant games first, then others, limited to 8-12 games
-    const allGames = [...relevantGames, ...games.filter(g => !relevantGames.includes(g))];
-    return allGames.slice(0, 12);
+    // For each interest, create 2-3 personalized games
+    preferredGames.slice(0, age <= 9 ? 2 : 3).forEach((gameType, gameIndex) => {
+      const subject = subjects[0];
+      
+      // Create game based on type
+      if (gameType === "pattern-recognition" && index === 0) {
+        games.push({
+          id: `pattern-${interest.toLowerCase()}`,
+          title: `${subject} Pattern Master 🎯`,
+          emoji: "🎯",
+          description: `Learn ${subject.toLowerCase()} through pattern recognition!`,
+          gameType: "pattern-recognition",
+          difficulty,
+          ageGroup: [ageGroup],
+          subjects: subjects,
+          pointsPerCorrect: 25,
+          maxPoints: difficulty === "Easy" ? 150 : difficulty === "Medium" ? 300 : 375,
+          color: "from-yellow-400 to-orange-500",
+          instructions: `Watch patterns related to ${subject} and repeat them!`
+        });
+      }
+      
+      if (gameType === "memory-cards") {
+        games.push({
+          id: `memory-${interest.toLowerCase()}-${gameIndex}`,
+          title: `${subject} Memory Match 🃏`,
+          emoji: "🃏",
+          description: `Match ${subject.toLowerCase()} concepts and improve memory!`,
+          gameType: "memory-cards",
+          difficulty,
+          ageGroup: [ageGroup],
+          subjects: subjects,
+          pointsPerCorrect: 20,
+          maxPoints: difficulty === "Easy" ? 100 : difficulty === "Medium" ? 160 : 200,
+          color: "from-purple-400 to-pink-500",
+          instructions: `Flip cards to find matching ${subject.toLowerCase()} pairs!`
+        });
+      }
+      
+      if (gameType === "word-scramble") {
+        games.push({
+          id: `scramble-${interest.toLowerCase()}-${gameIndex}`,
+          title: `${subject} Word Challenge 🔤`,
+          emoji: "🔤",
+          description: `Master ${subject.toLowerCase()} vocabulary through word puzzles!`,
+          gameType: "word-scramble",
+          difficulty,
+          ageGroup: [ageGroup],
+          subjects: subjects,
+          pointsPerCorrect: 10,
+          maxPoints: difficulty === "Easy" ? 80 : difficulty === "Medium" ? 80 : 60,
+          color: "from-green-400 to-emerald-500",
+          instructions: `Unscramble ${subject.toLowerCase()} terms!`
+        });
+      }
+      
+      if (gameType === "matching-pairs") {
+        games.push({
+          id: `match-${interest.toLowerCase()}-${gameIndex}`,
+          title: `${subject} Concept Matching 🎴`,
+          emoji: "🎴",
+          description: `Connect ${subject.toLowerCase()} ideas with their meanings!`,
+          gameType: "matching-pairs",
+          difficulty,
+          ageGroup: [ageGroup],
+          subjects: subjects,
+          pointsPerCorrect: 15,
+          maxPoints: difficulty === "Easy" ? 75 : difficulty === "Medium" ? 120 : 150,
+          color: "from-blue-400 to-cyan-500",
+          instructions: `Match ${subject.toLowerCase()} concepts together!`
+        });
+      }
+      
+      if (gameType === "quiz") {
+        games.push({
+          id: `quiz-${interest.toLowerCase()}-${gameIndex}`,
+          title: `${subject} Knowledge Test 📝`,
+          emoji: "📝",
+          description: `Test what you know about ${subject.toLowerCase()}!`,
+          gameType: "quiz",
+          difficulty,
+          ageGroup: [ageGroup],
+          subjects: subjects,
+          pointsPerCorrect: 10,
+          maxPoints: difficulty === "Easy" ? 60 : difficulty === "Medium" ? 80 : 60,
+          color: "from-orange-400 to-red-500",
+          instructions: `Answer ${subject.toLowerCase()} questions!`
+        });
+      }
+    });
+  });
+
+  // LEARNING GOALS BASED GAMES: Add specific games based on learning goals
+  if (learningGoals) {
+    learningGoals.forEach(goal => {
+      if (goal.toLowerCase().includes("memory") || goal.toLowerCase().includes("retention")) {
+        // Add extra memory-focused games
+        games.push({
+          id: "goal-memory-boost",
+          title: "Memory Booster Challenge 🧠",
+          emoji: "🧠",
+          description: "Special game to improve memory and retention!",
+          gameType: "memory-cards",
+          difficulty,
+          ageGroup: [ageGroup],
+          subjects: ["General"],
+          pointsPerCorrect: 20,
+          maxPoints: difficulty === "Easy" ? 100 : difficulty === "Medium" ? 160 : 200,
+          color: "from-indigo-400 to-purple-500",
+          instructions: "Focus on remembering patterns to boost your memory!"
+        });
+      }
+      
+      if (goal.toLowerCase().includes("vocabulary") || goal.toLowerCase().includes("language")) {
+        // Add vocabulary-focused games
+        games.push({
+          id: "goal-vocabulary-builder",
+          title: "Vocabulary Builder �",
+          emoji: "�",
+          description: "Expand your vocabulary with word games!",
+          gameType: "word-scramble",
+          difficulty,
+          ageGroup: [ageGroup],
+          subjects: ["English"],
+          pointsPerCorrect: 10,
+          maxPoints: difficulty === "Easy" ? 80 : difficulty === "Medium" ? 80 : 60,
+          color: "from-teal-400 to-green-500",
+          instructions: "Learn new words and their meanings!"
+        });
+      }
+      
+      if (goal.toLowerCase().includes("problem") || goal.toLowerCase().includes("logic")) {
+        // Add problem-solving games
+        games.push({
+          id: "goal-problem-solver",
+          title: "Logic Master 🧩",
+          emoji: "🧩",
+          description: "Develop problem-solving and logical thinking!",
+          gameType: "pattern-recognition",
+          difficulty,
+          ageGroup: [ageGroup],
+          subjects: ["Logic"],
+          pointsPerCorrect: 25,
+          maxPoints: difficulty === "Easy" ? 150 : difficulty === "Medium" ? 300 : 375,
+          color: "from-red-400 to-pink-500",
+          instructions: "Solve patterns and improve logical thinking!"
+        });
+      }
+      
+      if (goal.toLowerCase().includes("speed") || goal.toLowerCase().includes("quick")) {
+        // Add speed-focused games
+        games.push({
+          id: "goal-speed-quiz",
+          title: "Speed Challenge ⚡",
+          emoji: "⚡",
+          description: "Quick thinking and fast responses!",
+          gameType: "quiz",
+          difficulty,
+          ageGroup: [ageGroup],
+          subjects: ["General"],
+          pointsPerCorrect: 10,
+          maxPoints: difficulty === "Easy" ? 60 : difficulty === "Medium" ? 80 : 60,
+          color: "from-yellow-300 to-amber-500",
+          instructions: "Answer as quickly as possible!"
+        });
+      }
+    });
   }
 
-  return games.slice(0, 10);
+  // Remove duplicates based on gameType and subject combination
+  const uniqueGames = games.filter((game, index, self) =>
+    index === self.findIndex((g) => 
+      g.gameType === game.gameType && 
+      g.subjects[0] === game.subjects[0]
+    )
+  );
+
+  // Limit games based on age (younger = fewer games to avoid overwhelm)
+  const gameLimit = age <= 9 ? 6 : age <= 11 ? 8 : age <= 14 ? 10 : 12;
+  
+  return uniqueGames.slice(0, gameLimit);
 };
 
 /**

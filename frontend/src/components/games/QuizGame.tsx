@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { HelpCircle, Trophy, Star, Check, X, ArrowRight } from "lucide-react";
+import { HelpCircle, Trophy, Star, Check, X, ArrowRight, XCircle } from "lucide-react";
 
 interface QuizGameProps {
   difficulty: "Easy" | "Medium" | "Hard";
@@ -30,7 +30,8 @@ const QuizGame = ({ difficulty, subject = "General", onComplete, onClose }: Quiz
   const [gameComplete, setGameComplete] = useState(false);
 
   const pointsPerQuestion = 10;
-  const totalQuestions = difficulty === "Easy" ? 10 : difficulty === "Medium" ? 8 : 6;
+  // Fewer questions for younger children - Easy mode optimized for 6-9 year olds
+  const totalQuestions = difficulty === "Easy" ? 6 : difficulty === "Medium" ? 8 : 6;
 
   useEffect(() => {
     generateQuestions();
@@ -322,12 +323,12 @@ const QuizGame = ({ difficulty, subject = "General", onComplete, onClose }: Quiz
         className="flex flex-col items-center justify-center p-8 text-center space-y-6"
       >
         <Trophy className="h-24 w-24 text-yellow-500" />
-        <h2 className="text-4xl font-bold">Quiz Complete!</h2>
+        <h2 className="text-4xl font-bold text-gray-900 dark:text-white">Quiz Complete!</h2>
         <div className="space-y-2">
           <p className="text-2xl font-semibold text-primary">
             Score: {score} / {questions.length * pointsPerQuestion}
           </p>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-gray-700 dark:text-gray-300">
             {percentage}% Correct
           </p>
         </div>
@@ -353,18 +354,28 @@ const QuizGame = ({ difficulty, subject = "General", onComplete, onClose }: Quiz
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <HelpCircle className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-bold">Quiz Challenge</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Quiz Challenge</h2>
           </div>
-          <Badge variant="outline" className="text-lg px-4 py-2">
-            <Star className="h-4 w-4 mr-1" />
-            {score} pts
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-lg px-4 py-2 bg-white dark:bg-slate-800 border-2 font-semibold">
+              <Star className="h-4 w-4 mr-1 text-yellow-500" />
+              <span className="text-blue-600 dark:text-blue-400">{score} pts</span>
+            </Badge>
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+            >
+              <XCircle className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
         
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
-            <span>Question {currentIndex + 1} of {questions.length}</span>
-            <span>{Math.round(progress)}%</span>
+          <div className="flex justify-between text-sm font-semibold">
+            <span className="text-slate-700 dark:text-slate-200">Question {currentIndex + 1} of {questions.length}</span>
+            <span className="text-blue-600 dark:text-blue-400">{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
@@ -381,7 +392,7 @@ const QuizGame = ({ difficulty, subject = "General", onComplete, onClose }: Quiz
         >
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl text-gray-900 dark:text-white">{currentQuestion.question}</CardTitle>
+              <CardTitle className="text-xl font-bold text-slate-800 dark:text-slate-100">{currentQuestion.question}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {currentQuestion.options.map((option, index) => {
@@ -411,16 +422,16 @@ const QuizGame = ({ difficulty, subject = "General", onComplete, onClose }: Quiz
                     className={buttonClass}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold ${
                         showResult && isCorrect ? "bg-green-500 text-white" :
                         showResult && isSelected && !isCorrect ? "bg-red-500 text-white" :
-                        "bg-muted text-gray-700 dark:text-gray-300"
+                        "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200"
                       }`}>
                         {showResult && isCorrect ? <Check className="h-5 w-5" /> :
                          showResult && isSelected && !isCorrect ? <X className="h-5 w-5" /> :
                          String.fromCharCode(65 + index)}
                       </div>
-                      <span className="font-medium text-gray-900 dark:text-white">{option}</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-100">{option}</span>
                     </div>
                   </button>
                 );
@@ -433,8 +444,8 @@ const QuizGame = ({ difficulty, subject = "General", onComplete, onClose }: Quiz
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mt-4"
                 >
-                  <p className="text-sm text-gray-900 dark:text-white">
-                    <span className="font-semibold">💡 Explanation: </span>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                    <span className="font-bold">💡 Explanation: </span>
                     {currentQuestion.explanation}
                   </p>
                 </motion.div>

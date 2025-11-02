@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Shuffle, Check, X, Trophy, Star, ArrowRight } from "lucide-react";
+import { Shuffle, Check, X, Trophy, Star, ArrowRight, XCircle } from "lucide-react";
 
 interface WordScrambleGameProps {
   difficulty: "Easy" | "Medium" | "Hard";
@@ -29,7 +29,8 @@ const WordScrambleGame = ({ difficulty, subject = "General", onComplete, onClose
   const [gameComplete, setGameComplete] = useState(false);
 
   const pointsPerWord = 10;
-  const totalWords = difficulty === "Easy" ? 10 : difficulty === "Medium" ? 8 : 6;
+  // Adjust number of words based on difficulty - fewer for younger children
+  const totalWords = difficulty === "Easy" ? 8 : difficulty === "Medium" ? 8 : 6;
 
   useEffect(() => {
     generateWords();
@@ -251,12 +252,12 @@ const WordScrambleGame = ({ difficulty, subject = "General", onComplete, onClose
         className="flex flex-col items-center justify-center p-8 text-center space-y-6"
       >
         <Trophy className="h-24 w-24 text-yellow-500" />
-        <h2 className="text-4xl font-bold">Game Complete!</h2>
+        <h2 className="text-4xl font-bold text-gray-900 dark:text-white">Game Complete!</h2>
         <div className="space-y-2">
           <p className="text-2xl font-semibold text-primary">
             Score: {score} / {words.length * pointsPerWord}
           </p>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-gray-700 dark:text-gray-300">
             {percentage}% Correct
           </p>
         </div>
@@ -279,18 +280,28 @@ const WordScrambleGame = ({ difficulty, subject = "General", onComplete, onClose
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Shuffle className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-bold">Word Scramble</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Word Scramble</h2>
           </div>
-          <Badge variant="outline" className="text-lg px-4 py-2">
-            <Star className="h-4 w-4 mr-1" />
-            {score} pts
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-lg px-4 py-2 bg-white dark:bg-slate-800 border-2 font-semibold">
+              <Star className="h-4 w-4 mr-1 text-yellow-500" />
+              <span className="text-blue-600 dark:text-blue-400">{score} pts</span>
+            </Badge>
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+            >
+              <XCircle className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
         
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
-            <span>Question {currentIndex + 1} of {words.length}</span>
-            <span>{Math.round(progress)}%</span>
+          <div className="flex justify-between text-sm font-semibold">
+            <span className="text-slate-700 dark:text-slate-200">Question {currentIndex + 1} of {words.length}</span>
+            <span className="text-blue-600 dark:text-blue-400">{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
@@ -307,18 +318,18 @@ const WordScrambleGame = ({ difficulty, subject = "General", onComplete, onClose
         >
           <Card className="relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
-            <CardHeader>
-              <CardTitle className="text-center text-lg text-gray-900 dark:text-white">
+            <CardHeader className="relative z-10">
+              <CardTitle className="text-center text-lg font-bold text-slate-800 dark:text-slate-100">
                 Unscramble this word:
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 relative z-10">
               {/* Scrambled Word */}
               <div className="text-center">
-                <div className="text-5xl font-bold tracking-wider text-primary mb-4 font-mono">
+                <div className="text-5xl font-bold tracking-wider text-primary mb-4 font-mono drop-shadow-sm">
                   {currentWord.scrambled}
                 </div>
-                <p className="text-lg text-gray-700 dark:text-gray-300 italic">
+                <p className="text-lg font-medium text-slate-700 dark:text-slate-200 italic">
                   💡 Hint: {currentWord.hint}
                 </p>
               </div>

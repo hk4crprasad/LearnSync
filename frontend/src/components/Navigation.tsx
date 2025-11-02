@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, LogOut, User, BookOpen, LayoutDashboard, Shield, MessageSquare, Brain, Award, Radio, Youtube, Menu } from "lucide-react";
 import {
@@ -21,12 +22,17 @@ import { useState } from "react";
 
 const Navigation = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { clearProfile } = useUserProfile();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
+    // Clear user profile and game data
+    clearProfile();
+    // Clear authentication
     logout();
+    // Redirect to home
     navigate("/");
   };
 

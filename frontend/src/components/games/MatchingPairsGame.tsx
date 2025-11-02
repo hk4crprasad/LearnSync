@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Link2, Trophy, Star, Check, X } from "lucide-react";
+import { Link2, Trophy, Star, Check, X, XCircle } from "lucide-react";
 
 interface MatchingPairsGameProps {
   difficulty: "Easy" | "Medium" | "Hard";
@@ -31,7 +31,8 @@ const MatchingPairsGame = ({ difficulty, subject = "General", onComplete, onClos
   const [gameComplete, setGameComplete] = useState(false);
 
   const pointsPerMatch = 15;
-  const totalPairs = difficulty === "Easy" ? 6 : difficulty === "Medium" ? 8 : 10;
+  // Fewer pairs for younger children - Easy mode optimized for 6-9 year olds
+  const totalPairs = difficulty === "Easy" ? 5 : difficulty === "Medium" ? 8 : 10;
 
   useEffect(() => {
     generatePairs();
@@ -251,15 +252,15 @@ const MatchingPairsGame = ({ difficulty, subject = "General", onComplete, onClos
         className="flex flex-col items-center justify-center p-8 text-center space-y-6"
       >
         <Trophy className="h-24 w-24 text-yellow-500" />
-        <h2 className="text-4xl font-bold">All Matched!</h2>
+        <h2 className="text-4xl font-bold text-gray-900 dark:text-white">All Matched!</h2>
         <div className="space-y-2">
           <p className="text-2xl font-semibold text-primary">
             Score: {score} / {pairs.length * pointsPerMatch}
           </p>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-gray-700 dark:text-gray-300">
             {percentage}% Score • {accuracy}% Accuracy
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-700 dark:text-gray-300">
             {attempts} attempts
           </p>
         </div>
@@ -284,18 +285,28 @@ const MatchingPairsGame = ({ difficulty, subject = "General", onComplete, onClos
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link2 className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-bold">Matching Pairs</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Matching Pairs</h2>
           </div>
-          <Badge variant="outline" className="text-lg px-4 py-2">
-            <Star className="h-4 w-4 mr-1" />
-            {score} pts
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-lg px-4 py-2 bg-white dark:bg-slate-800 border-2 font-semibold">
+              <Star className="h-4 w-4 mr-1 text-yellow-500" />
+              <span className="text-blue-600 dark:text-blue-400">{score} pts</span>
+            </Badge>
+            <Button
+              onClick={onClose}
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+            >
+              <XCircle className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
         
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
-            <span>Matched: {matched.size} of {pairs.length}</span>
-            <span>Attempts: {attempts}</span>
+          <div className="flex justify-between text-sm font-semibold">
+            <span className="text-slate-700 dark:text-slate-200">Matched: {matched.size} of {pairs.length}</span>
+            <span className="text-blue-600 dark:text-blue-400">Attempts: {attempts}</span>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
@@ -304,7 +315,7 @@ const MatchingPairsGame = ({ difficulty, subject = "General", onComplete, onClos
       {/* Instructions */}
       <Card className="bg-primary/5 border-primary/20">
         <CardContent className="pt-6">
-          <p className="text-center text-sm text-gray-700 dark:text-gray-300">
+          <p className="text-center text-sm font-medium text-slate-700 dark:text-slate-200">
             💡 Select an item from the left, then match it with the correct item on the right
           </p>
         </CardContent>
@@ -331,7 +342,7 @@ const MatchingPairsGame = ({ difficulty, subject = "General", onComplete, onClos
               >
                 <div className="flex items-center gap-3 w-full">
                   {matched.has(index) && <Check className="h-5 w-5 text-green-600 flex-shrink-0" />}
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">{pair.left}</span>
+                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{pair.left}</span>
                 </div>
               </Button>
             </motion.div>
@@ -361,7 +372,7 @@ const MatchingPairsGame = ({ difficulty, subject = "General", onComplete, onClos
                 >
                   <div className="flex items-center gap-3 w-full">
                     {isMatched && <Check className="h-5 w-5 text-green-600 flex-shrink-0" />}
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{right}</span>
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{right}</span>
                   </div>
                 </Button>
               </motion.div>

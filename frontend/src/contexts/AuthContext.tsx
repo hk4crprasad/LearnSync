@@ -35,9 +35,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         try {
           const userData = await api.getCurrentUser();
           setUser(userData);
+          // Store user ID if not already stored
+          if (userData.id && !localStorage.getItem("user_id")) {
+            localStorage.setItem("user_id", userData.id.toString());
+          }
         } catch (error) {
           console.error("Failed to fetch user:", error);
           localStorage.removeItem("access_token");
+          localStorage.removeItem("user_id");
         }
       }
       setIsLoading(false);
@@ -52,6 +57,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       localStorage.setItem("access_token", response.access_token);
       const userData = await api.getCurrentUser();
       setUser(userData);
+      // Store user ID for profile management
+      if (userData.id) {
+        localStorage.setItem("user_id", userData.id.toString());
+      }
       toast.success("Welcome back!");
     } catch (error: any) {
       toast.error(error.message || "Login failed");
@@ -65,9 +74,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       localStorage.setItem("access_token", response.access_token);
       if (response.user) {
         setUser(response.user);
+        // Store user ID for profile management
+        if (response.user.id) {
+          localStorage.setItem("user_id", response.user.id.toString());
+        }
       } else {
         const userData = await api.getCurrentUser();
         setUser(userData);
+        // Store user ID for profile management
+        if (userData.id) {
+          localStorage.setItem("user_id", userData.id.toString());
+        }
       }
       toast.success("Account created successfully!");
     } catch (error: any) {
@@ -77,7 +94,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const logout = () => {
+    // Clear authentication token
     localStorage.removeItem("access_token");
+    
+    // Clear user ID
+    const userId = localStorage.getItem("user_id");
+    localStorage.removeItem("user_id");
+    
+    // Clear user profile and game progress data for this user
+    if (userId) {
+      localStorage.removeItem(`learningGameProfile_${userId}`);
+    }
+    // Also clear old format for backward compatibility
+    localStorage.removeItem("learningGameProfile");
+    
+    // Clear any other session data
+    localStorage.removeItem("userPreferences");
+    
     setUser(null);
     toast.info("Logged out successfully");
   };

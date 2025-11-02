@@ -44,22 +44,37 @@ const defaultProfile: UserProfile = {
 
 export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
   const [userProfile, setUserProfileState] = useState<UserProfile | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Load profile from localStorage on mount
+  // Load profile from localStorage on mount and when user changes
   useEffect(() => {
-    const savedProfile = localStorage.getItem("learningGameProfile");
-    if (savedProfile) {
-      try {
-        setUserProfileState(JSON.parse(savedProfile));
-      } catch (error) {
-        console.error("Error loading profile:", error);
+    // Check if there's a logged-in user
+    const token = localStorage.getItem("access_token");
+    const userId = localStorage.getItem("user_id"); // We'll need to store this on login
+    
+    if (token && userId) {
+      setCurrentUserId(userId);
+      // Load profile specific to this user
+      const savedProfile = localStorage.getItem(`learningGameProfile_${userId}`);
+      if (savedProfile) {
+        try {
+          setUserProfileState(JSON.parse(savedProfile));
+        } catch (error) {
+          console.error("Error loading profile:", error);
+        }
       }
+    } else {
+      // No user logged in, clear profile
+      setCurrentUserId(null);
+      setUserProfileState(null);
     }
   }, []);
 
   const setUserProfile = (profile: UserProfile) => {
     setUserProfileState(profile);
-    localStorage.setItem("learningGameProfile", JSON.stringify(profile));
+    // Save profile with user ID to make it user-specific
+    const userId = currentUserId || localStorage.getItem("user_id") || "default";
+    localStorage.setItem(`learningGameProfile_${userId}`, JSON.stringify(profile));
   };
 
   const updateProgress = (gameId: string, points: number, score: number = 0) => {
@@ -104,6 +119,10 @@ export const UserProfileProvider = ({ children }: { children: ReactNode }) => {
 
   const clearProfile = () => {
     setUserProfileState(null);
+    // Clear profile for current user
+    const userId = currentUserId || localStorage.getItem("user_id") || "default";
+    localStorage.removeItem(`learningGameProfile_${userId}`);
+    // Also clear the old format for backward compatibility
     localStorage.removeItem("learningGameProfile");
   };
 
