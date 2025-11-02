@@ -291,7 +291,7 @@ const MemoryCardsGame = ({ difficulty, subject = "General", onComplete, onClose 
         </div>
         
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-muted-foreground">
+          <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
             <span>Matched: {matchedPairs} of {totalPairs}</span>
             <span>Moves: {moves}</span>
           </div>
@@ -302,7 +302,7 @@ const MemoryCardsGame = ({ difficulty, subject = "General", onComplete, onClose 
       {/* Instructions */}
       <Card className="bg-primary/5 border-primary/20">
         <CardContent className="pt-6">
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-gray-700 dark:text-gray-300">
             💡 Click cards to flip them. Match pairs to win! Fewer moves = higher score
           </p>
         </CardContent>
@@ -342,7 +342,7 @@ const MemoryCardsGame = ({ difficulty, subject = "General", onComplete, onClose 
                 {card.flipped || card.matched ? (
                   <div className="text-center space-y-2">
                     <div className="text-4xl">{card.emoji}</div>
-                    <div className="text-xs font-semibold px-2">{card.content}</div>
+                    <div className="text-xs font-semibold px-2 text-gray-900 dark:text-white">{card.content}</div>
                   </div>
                 ) : (
                   <div className="text-4xl">❓</div>

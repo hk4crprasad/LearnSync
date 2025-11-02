@@ -293,7 +293,7 @@ const MatchingPairsGame = ({ difficulty, subject = "General", onComplete, onClos
         </div>
         
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-muted-foreground">
+          <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
             <span>Matched: {matched.size} of {pairs.length}</span>
             <span>Attempts: {attempts}</span>
           </div>
@@ -304,7 +304,7 @@ const MatchingPairsGame = ({ difficulty, subject = "General", onComplete, onClos
       {/* Instructions */}
       <Card className="bg-primary/5 border-primary/20">
         <CardContent className="pt-6">
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-gray-700 dark:text-gray-300">
             💡 Select an item from the left, then match it with the correct item on the right
           </p>
         </CardContent>
@@ -331,7 +331,7 @@ const MatchingPairsGame = ({ difficulty, subject = "General", onComplete, onClos
               >
                 <div className="flex items-center gap-3 w-full">
                   {matched.has(index) && <Check className="h-5 w-5 text-green-600 flex-shrink-0" />}
-                  <span className="text-sm font-medium">{pair.left}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{pair.left}</span>
                 </div>
               </Button>
             </motion.div>
@@ -361,7 +361,7 @@ const MatchingPairsGame = ({ difficulty, subject = "General", onComplete, onClos
                 >
                   <div className="flex items-center gap-3 w-full">
                     {isMatched && <Check className="h-5 w-5 text-green-600 flex-shrink-0" />}
-                    <span className="text-sm font-medium">{right}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{right}</span>
                   </div>
                 </Button>
               </motion.div>

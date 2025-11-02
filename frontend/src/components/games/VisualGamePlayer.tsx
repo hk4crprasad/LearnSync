@@ -64,8 +64,8 @@ const VisualGamePlayer = ({ game, onClose, onComplete }: VisualGamePlayerProps) 
         return (
           <div className="flex flex-col items-center justify-center p-12 text-center space-y-4">
             <div className="text-6xl mb-4">{game.emoji}</div>
-            <h2 className="text-3xl font-bold">{game.title}</h2>
-            <p className="text-lg text-muted-foreground max-w-md">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{game.title}</h2>
+            <p className="text-lg text-gray-700 dark:text-gray-300 max-w-md">
               {game.description}
             </p>
             <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mt-4">
@@ -82,7 +82,7 @@ const VisualGamePlayer = ({ game, onClose, onComplete }: VisualGamePlayerProps) 
       default:
         return (
           <div className="flex flex-col items-center justify-center p-12 text-center space-y-4">
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-gray-700 dark:text-gray-300">
               Game type not supported yet.
             </p>
             <Button onClick={onClose}>Back to Games</Button>

@@ -167,10 +167,10 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
         <Zap className="h-24 w-24 text-yellow-500" />
         <div>
           <h2 className="text-4xl font-bold mb-3">Pattern Master</h2>
-          <p className="text-lg text-muted-foreground mb-2">
+          <p className="text-lg text-gray-700 dark:text-gray-300 mb-2">
             Watch the pattern and repeat it!
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-700 dark:text-gray-300">
             Similar to Simon Says - memorize and repeat the sequence
           </p>
         </div>
@@ -180,22 +180,22 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
             <div className="flex items-start gap-2">
               <span className="text-2xl">👀</span>
               <div>
-                <p className="font-semibold">Watch</p>
-                <p className="text-sm text-muted-foreground">Observe the flashing pattern</p>
+                <p className="font-semibold text-gray-900 dark:text-white">Watch</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">Observe the flashing pattern</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-2xl">🧠</span>
               <div>
-                <p className="font-semibold">Remember</p>
-                <p className="text-sm text-muted-foreground">Memorize the sequence</p>
+                <p className="font-semibold text-gray-900 dark:text-white">Remember</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">Memorize the sequence</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-2xl">👆</span>
               <div>
-                <p className="font-semibold">Repeat</p>
-                <p className="text-sm text-muted-foreground">Click the buttons in order</p>
+                <p className="font-semibold text-gray-900 dark:text-white">Repeat</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">Click the buttons in order</p>
               </div>
             </div>
           </CardContent>
@@ -269,7 +269,7 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
         </div>
         
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-muted-foreground">
+          <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
             <span>Level {level} of {maxLevel}</span>
             <span>{Math.round(progress)}% Complete</span>
           </div>
@@ -280,11 +280,11 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
       {/* Status */}
       <Card className={`${isPlaying ? "bg-yellow-500/10 border-yellow-500" : isUserTurn ? "bg-green-500/10 border-green-500" : "bg-blue-500/10 border-blue-500"} transition-all`}>
         <CardContent className="pt-6">
-          <p className="text-center text-lg font-semibold">
+          <p className="text-center text-lg font-semibold text-gray-900 dark:text-white">
             {isPlaying ? "👀 Watch the pattern..." : isUserTurn ? "👆 Your turn! Repeat the pattern" : "🎮 Get ready..."}
           </p>
           {isUserTurn && (
-            <p className="text-center text-sm text-muted-foreground mt-2">
+            <p className="text-center text-sm text-gray-700 dark:text-gray-300 mt-2">
               {userPattern.length} of {pattern.length} buttons clicked
             </p>
           )}
@@ -316,7 +316,7 @@ const PatternRecognitionGame = ({ difficulty, subject = "General", onComplete, o
       {/* Instructions */}
       <Card className="bg-muted/50">
         <CardContent className="pt-6">
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-gray-700 dark:text-gray-300">
             💡 Each level adds one more button to remember. Listen to the sounds and watch the lights!
           </p>
         </CardContent>

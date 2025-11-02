@@ -288,7 +288,7 @@ const WordScrambleGame = ({ difficulty, subject = "General", onComplete, onClose
         </div>
         
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-muted-foreground">
+          <div className="flex justify-between text-sm text-gray-700 dark:text-gray-300">
             <span>Question {currentIndex + 1} of {words.length}</span>
             <span>{Math.round(progress)}%</span>
           </div>
@@ -308,7 +308,7 @@ const WordScrambleGame = ({ difficulty, subject = "General", onComplete, onClose
           <Card className="relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-purple-500/5" />
             <CardHeader>
-              <CardTitle className="text-center text-lg text-muted-foreground">
+              <CardTitle className="text-center text-lg text-gray-900 dark:text-white">
                 Unscramble this word:
               </CardTitle>
             </CardHeader>
@@ -318,7 +318,7 @@ const WordScrambleGame = ({ difficulty, subject = "General", onComplete, onClose
                 <div className="text-5xl font-bold tracking-wider text-primary mb-4 font-mono">
                   {currentWord.scrambled}
                 </div>
-                <p className="text-lg text-muted-foreground italic">
+                <p className="text-lg text-gray-700 dark:text-gray-300 italic">
                   💡 Hint: {currentWord.hint}
                 </p>
               </div>
