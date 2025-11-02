@@ -43,6 +43,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { useLocation } from "react-router-dom";
 
 // Animation styles
 const animationStyles = `
@@ -100,6 +101,7 @@ interface ChatSessionSummary {
 const Chatbot = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const location = useLocation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -107,6 +109,7 @@ const Chatbot = () => {
   const [chatSessions, setChatSessions] = useState<ChatSessionSummary[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasProcessedInitialQuery = useRef(false);
 
   // Learning Path state
   const [learningPathLevel, setLearningPathLevel] = useState("Beginner");
@@ -139,6 +142,19 @@ const Chatbot = () => {
       loadChatSessions();
     }
   }, [user]);
+
+  // Handle initial query from Dashboard
+  useEffect(() => {
+    const state = location.state as { initialQuery?: string };
+    if (state?.initialQuery && !hasProcessedInitialQuery.current && !isLoading) {
+      hasProcessedInitialQuery.current = true;
+      setInput(state.initialQuery);
+      // Small delay to ensure UI is ready
+      setTimeout(() => {
+        handleSendWithQuery(state.initialQuery);
+      }, 500);
+    }
+  }, [location.state]);
 
   const loadChatSessions = async () => {
     if (!user) return;
@@ -187,15 +203,19 @@ const Chatbot = () => {
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
+    await handleSendWithQuery(input);
+  };
+
+  const handleSendWithQuery = async (queryText: string) => {
+    if (!queryText.trim() || isLoading) return;
 
     const userMessage: Message = {
       role: "user",
-      content: input,
+      content: queryText,
       timestamp: new Date().toISOString(),
     };
 
     setMessages([...messages, userMessage]);
-    const currentInput = input;
     setInput("");
     setIsLoading(true);
 
@@ -218,7 +238,7 @@ const Chatbot = () => {
           "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
-          message: currentInput,
+          message: queryText,
           session_id: sessionId,
           student_id: user?.id,
         }),

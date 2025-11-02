@@ -4,14 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Loader2, BookOpen, KeyRound } from "lucide-react";
+import { Search, Loader2, BookOpen, KeyRound, Home, User, Trophy } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import ThemeToggle from "@/components/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Courses = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [courseIdInput, setCourseIdInput] = useState("");
@@ -84,6 +88,55 @@ const Courses = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Custom Navbar */}
+      <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-6">
+            <Link to="/" className="flex items-center gap-2">
+              <BookOpen className="h-6 w-6 text-primary" />
+              <span className="font-bold text-xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                LearnSync
+              </span>
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/dashboard")}
+              className="rounded-full"
+              title={t("nav.home")}
+            >
+              <Home className="h-5 w-5" />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/gamification")}
+              className="rounded-full"
+              title={t("game.leaderboard_tooltip")}
+            >
+              <Trophy className="h-5 w-5" />
+            </Button>
+
+            <LanguageSwitcher />
+            <ThemeToggle />
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/profile")}
+              className="rounded-full"
+              title={t("nav.profile")}
+            >
+              <User className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </nav>
+
       {/* Header */}
       <div className="bg-gradient-to-r from-primary to-secondary text-white">
         <div className="container mx-auto px-4 py-12">

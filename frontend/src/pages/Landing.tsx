@@ -222,7 +222,7 @@ const Landing = () => {
                       size="lg"
                       variant="outline"
                       asChild
-                      className="border-2 border-white text-white hover:bg-white/20 backdrop-blur-sm shadow-xl px-8 py-6 text-lg font-semibold rounded-xl"
+                      className="border-2 border-white text-indigo-600 bg-white hover:bg-gray-100 hover:text-black shadow-xl px-8 py-6 text-lg font-semibold rounded-xl"
                     >
                       <Link to="/login">{t("landing.cta_signin")}</Link>
                     </Button>

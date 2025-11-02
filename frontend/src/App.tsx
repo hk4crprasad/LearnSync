@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { UserProfileProvider } from "@/contexts/UserProfileContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Navigation from "@/components/Navigation";
 import Landing from "./pages/Landing";
@@ -27,13 +28,13 @@ import AdaptiveLearning from "./pages/AdaptiveLearning";
 import Scholarships from "./pages/Scholarships";
 import VoiceChat from "./pages/VoiceChat";
 import YouTubeCourses from "./pages/YouTubeCourses";
-import Game from "./pages/Game";
+import PersonalizedGame from "./pages/PersonalizedGame";
 
 const queryClient = new QueryClient();
 
 const AppContent = () => {
   const location = useLocation();
-  const hideNavigation = location.pathname === "/game";
+  const hideNavigation = location.pathname === "/personalized-game" || location.pathname === "/courses" || location.pathname.startsWith("/courses/");
 
   return (
     <>
@@ -179,10 +180,10 @@ const AppContent = () => {
               }
             />
             <Route
-              path="/game"
+              path="/personalized-game"
               element={
                 <ProtectedRoute>
-                  <Game />
+                  <PersonalizedGame />
                 </ProtectedRoute>
               }
             />
@@ -195,13 +196,15 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
-      </TooltipProvider>
+      <UserProfileProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </TooltipProvider>
+      </UserProfileProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

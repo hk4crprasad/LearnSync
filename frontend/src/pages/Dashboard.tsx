@@ -3,41 +3,92 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { api, Course, Recommendations } from "@/lib/api";
-import { BookOpen, TrendingUp, Award, Sparkles, Loader2, ArrowRight, Youtube } from "lucide-react";
-import { Link } from "react-router-dom";
+import { BookOpen, TrendingUp, Award, Sparkles, Loader2, ArrowRight, Youtube, Send } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const Dashboard = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendations | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [userQuery, setUserQuery] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [coursesData, enrolledData, recsData] = await Promise.all([
-          api.getCourses(0, 6),
-          api.getMyEnrolledCourses(0, 10).catch(() => []),
-          api.getRecommendations().catch(() => null),
-        ]);
+        // Load critical data first
+        setIsLoading(true);
+        const coursesData = await api.getCourses(0, 6);
         setCourses(coursesData);
-        setEnrolledCourses(enrolledData);
-        setRecommendations(recsData);
+        setIsLoading(false);
+        
+        // Load user-specific data in background
+        api.getMyEnrolledCourses(0, 10)
+          .then(setEnrolledCourses)
+          .catch(() => setEnrolledCourses([]));
+        
+        // Load recommendations last (non-critical)
+        api.getRecommendations()
+          .then(setRecommendations)
+          .catch(() => setRecommendations(null));
+          
       } catch (error: any) {
         toast.error(t("dashboard.failed_load"));
         console.error(error);
-      } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
   }, [t]);
+
+  // Show welcome dialog when dashboard loads (only first time per user)
+  useEffect(() => {
+    if (user) {
+      // Check if dialog was shown for this user before
+      const welcomeShownKey = `welcomeDialogShown_${user.id}`;
+      const hasShownDialog = localStorage.getItem(welcomeShownKey);
+      
+      if (!hasShownDialog) {
+        // Small delay to ensure smooth UI transition
+        const timer = setTimeout(() => {
+          setShowWelcomeDialog(true);
+          localStorage.setItem(welcomeShownKey, 'true');
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [user]);
+
+  const handleQuerySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (userQuery.trim()) {
+      // Navigate to chatbot with the query
+      navigate('/chatbot', { state: { initialQuery: userQuery.trim() } });
+      setShowWelcomeDialog(false);
+    } else {
+      toast.error("Please enter a question!");
+    }
+  };
+
+  const handleSkip = () => {
+    setShowWelcomeDialog(false);
+  };
 
   if (isLoading) {
     return (
@@ -49,6 +100,41 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Welcome Dialog */}
+      <Dialog open={showWelcomeDialog} onOpenChange={setShowWelcomeDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">
+              {t("dashboard.dialog_greeting", { name: user?.full_name || "User" })}
+            </DialogTitle>
+            <DialogDescription className="text-center text-base pt-2">
+              {t("dashboard.dialog_description")}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleQuerySubmit} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Input
+                type="text"
+                placeholder={t("dashboard.dialog_placeholder")}
+                value={userQuery}
+                onChange={(e) => setUserQuery(e.target.value)}
+                className="w-full"
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button type="button" variant="outline" onClick={handleSkip}>
+                {t("dashboard.dialog_skip")}
+              </Button>
+              <Button type="submit" className="gap-2">
+                <Send className="h-4 w-4" />
+                {t("dashboard.dialog_submit")}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="bg-gradient-to-r from-primary to-secondary text-white">
         <div className="container mx-auto px-4 py-12">

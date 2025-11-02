@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, LogOut, User, BookOpen, LayoutDashboard, Shield, MessageSquare, Brain, Award, Radio, Youtube, Gamepad2, Menu } from "lucide-react";
+import { GraduationCap, LogOut, User, BookOpen, LayoutDashboard, Shield, MessageSquare, Brain, Award, Radio, Youtube, Menu } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,7 +46,7 @@ const Navigation = () => {
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
             <>
-              {/* Desktop Navigation - Order: Dashboard, AI Chat, Game, Courses, Video Courses, Adaptive, Language, Dark Mode, Profile */}
+              {/* Desktop Navigation - Order: Dashboard, AI Chat, Game, Adaptive, Language, Dark Mode, Profile */}
               <div className="hidden lg:flex items-center gap-2">
                 <Button
                   variant={isActive("/dashboard") ? "default" : "ghost"}
@@ -69,33 +69,14 @@ const Navigation = () => {
                   </Link>
                 </Button>
                 <Button
-                  variant={isActive("/game") ? "default" : "ghost"}
+                  variant={isActive("/personalized-game") ? "default" : "ghost"}
                   asChild
                   size="sm"
+                  className="bg-gradient-to-r from-primary/10 to-purple-600/10 hover:from-primary/20 hover:to-purple-600/20"
                 >
-                  <Link to="/game">
-                    <Gamepad2 className="h-4 w-4 mr-2" />
-                    {t("nav.game")}
-                  </Link>
-                </Button>
-                <Button
-                  variant={isActive("/courses") ? "default" : "ghost"}
-                  asChild
-                  size="sm"
-                >
-                  <Link to="/courses">
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    {t("nav.courses")}
-                  </Link>
-                </Button>
-                <Button
-                  variant={isActive("/youtube-courses") ? "default" : "ghost"}
-                  asChild
-                  size="sm"
-                >
-                  <Link to="/youtube-courses">
-                    <Youtube className="h-4 w-4 mr-2" />
-                    {t("nav.video_courses")}
+                  <Link to="/personalized-game">
+                    <Award className="h-4 w-4 mr-2" />
+                    {t("game.my_games")}
                   </Link>
                 </Button>
                 {user?.role === "student" && (
@@ -173,38 +154,14 @@ const Navigation = () => {
                       </Button>
                       
                       <Button
-                        variant={isActive("/game") ? "default" : "ghost"}
+                        variant={isActive("/personalized-game") ? "default" : "ghost"}
                         asChild
-                        className="justify-start"
+                        className="justify-start bg-gradient-to-r from-primary/10 to-purple-600/10 hover:from-primary/20 hover:to-purple-600/20"
                         onClick={() => setSidebarOpen(false)}
                       >
-                        <Link to="/game">
-                          <Gamepad2 className="h-4 w-4 mr-2" />
-                          {t("nav.game")}
-                        </Link>
-                      </Button>
-                      
-                      <Button
-                        variant={isActive("/courses") ? "default" : "ghost"}
-                        asChild
-                        className="justify-start"
-                        onClick={() => setSidebarOpen(false)}
-                      >
-                        <Link to="/courses">
-                          <BookOpen className="h-4 w-4 mr-2" />
-                          {t("nav.courses")}
-                        </Link>
-                      </Button>
-                      
-                      <Button
-                        variant={isActive("/youtube-courses") ? "default" : "ghost"}
-                        asChild
-                        className="justify-start"
-                        onClick={() => setSidebarOpen(false)}
-                      >
-                        <Link to="/youtube-courses">
-                          <Youtube className="h-4 w-4 mr-2" />
-                          {t("nav.video_courses")}
+                        <Link to="/personalized-game">
+                          <Award className="h-4 w-4 mr-2" />
+                          {t("game.my_games")}
                         </Link>
                       </Button>
                       
