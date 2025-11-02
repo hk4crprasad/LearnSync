@@ -7,8 +7,10 @@ import { Progress } from "@/components/ui/progress";
 import { useUserProfile } from "@/contexts/UserProfileContext";
 import { getPersonalizedWelcome, getMotivationalMessage } from "@/utils/gameRecommendations";
 import { generatePersonalizedGames, getGameMotivation, PersonalizedGame } from "@/utils/personalizedGameGenerator";
+import { generateVisualGames, VisualGameTemplate } from "@/utils/visualGameTypes";
 import InteractiveGameCard from "@/components/InteractiveGameCard";
 import GamePlayer from "@/components/GamePlayer";
+import VisualGamePlayer from "@/components/games/VisualGamePlayer";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
@@ -22,7 +24,8 @@ import {
   Award,
   Zap,
   Sparkles,
-  Rocket
+  Rocket,
+  Gamepad2
 } from "lucide-react";
 import {
   Dialog,
@@ -32,12 +35,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import UserProfileForm from "./UserProfileForm";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 
 const PersonalizedDashboard = () => {
   const { userProfile, clearProfile } = useUserProfile();
   const { t } = useTranslation();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [activeGame, setActiveGame] = useState<PersonalizedGame | null>(null);
+  const [activeVisualGame, setActiveVisualGame] = useState<VisualGameTemplate | null>(null);
 
   if (!userProfile) return null;
 
@@ -49,6 +59,7 @@ const PersonalizedDashboard = () => {
 
   // Generate personalized games based on user profile
   const personalizedGames = generatePersonalizedGames(userProfile);
+  const visualGames = generateVisualGames(userProfile);
 
   // Calculate overall progress
   const totalPossiblePoints = 510; // 85 points per game × 6 games
@@ -62,6 +73,18 @@ const PersonalizedDashboard = () => {
         description: getGameMotivation(game.type)
       });
     }
+  };
+
+  const handlePlayVisualGame = (game: VisualGameTemplate) => {
+    setActiveVisualGame(game);
+  };
+
+  const handleVisualGameComplete = (score: number, maxScore: number) => {
+    const percentage = Math.round((score / maxScore) * 100);
+    toast.success(`Game Complete! 🎉`, {
+      description: `You scored ${score}/${maxScore} points (${percentage}%)`
+    });
+    setActiveVisualGame(null);
   };
 
   return (
@@ -263,18 +286,85 @@ const PersonalizedDashboard = () => {
             {personalizedGameWelcome}
           </motion.p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {personalizedGames.map((game, index) => (
-              <InteractiveGameCard
-                key={game.id}
-                game={game}
-                index={index}
-                onPlay={handlePlayGame}
-              />
-            ))}
-          </div>
+          <Tabs defaultValue="visual" className="w-full">
+            <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+              <TabsTrigger value="visual" className="gap-2">
+                <Gamepad2 className="h-4 w-4" />
+                Visual Games
+              </TabsTrigger>
+              <TabsTrigger value="story" className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                Story Adventures
+              </TabsTrigger>
+            </TabsList>
 
-          {personalizedGames.length === 0 && (
+            <TabsContent value="visual" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {visualGames.map((game, index) => (
+                  <motion.div
+                    key={game.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer border-2 hover:border-primary/50">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="text-4xl">{game.emoji}</div>
+                            <div>
+                              <CardTitle className="text-lg">{game.title}</CardTitle>
+                              <Badge variant="outline" className="mt-1">
+                                {game.gameType.replace('-', ' ')}
+                              </Badge>
+                            </div>
+                          </div>
+                          <Badge className={`${game.difficulty === 'Easy' ? 'bg-green-500' : game.difficulty === 'Medium' ? 'bg-yellow-500' : 'bg-red-500'}`}>
+                            {game.difficulty}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground mb-4">{game.description}</p>
+                        <div className="flex items-center justify-between text-sm mb-3">
+                          <span className="flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-500" />
+                            Max: {game.maxPoints} pts
+                          </span>
+                          <span className="text-muted-foreground">
+                            {game.pointsPerCorrect} pts each
+                          </span>
+                        </div>
+                        <Button 
+                          className="w-full gap-2" 
+                          onClick={() => handlePlayVisualGame(game)}
+                        >
+                          <Zap className="h-4 w-4" />
+                          Play Now
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="story" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {personalizedGames.map((game, index) => (
+                  <InteractiveGameCard
+                    key={game.id}
+                    game={game}
+                    index={index}
+                    onPlay={handlePlayGame}
+                  />
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {personalizedGames.length === 0 && visualGames.length === 0 && (
             <Card className="p-12 text-center">
               <Sparkles className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-xl font-semibold mb-2">{t("game.no_games_yet")}</h3>
@@ -295,6 +385,15 @@ const PersonalizedDashboard = () => {
         <GamePlayer
           game={activeGame}
           onClose={() => setActiveGame(null)}
+        />
+      )}
+
+      {/* Visual Game Player Modal */}
+      {activeVisualGame && (
+        <VisualGamePlayer
+          game={activeVisualGame}
+          onClose={() => setActiveVisualGame(null)}
+          onComplete={handleVisualGameComplete}
         />
       )}
     </div>

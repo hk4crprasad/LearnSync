@@ -275,7 +275,7 @@ const Chatbot = () => {
       })));
       setSessionId(session_id);
       setIsSidebarOpen(false);
-      toast.success(t("chat.session_loaded"));
+      // toast.success(t("chat.session_loaded")); // Removed flash message
     } catch (error) {
       toast.error(t("chat.failed_load_session"));
       console.error(error);
@@ -292,7 +292,7 @@ const Chatbot = () => {
         setMessages([]);
         setSessionId(null);
       }
-      toast.success(t("chat.session_deleted"));
+      // toast.success(t("chat.session_deleted")); // Removed flash message
     } catch (error) {
       toast.error(t("chat.failed_delete_session"));
       console.error(error);
@@ -446,7 +446,7 @@ const Chatbot = () => {
         throw new Error("No response received from AI");
       }
       
-      toast.success(t("chat.response_received"));
+      // toast.success(t("chat.response_received")); // Removed flash message
     } catch (error: any) {
       toast.error(t("chat.failed_send_message"));
       console.error(error);
@@ -523,7 +523,7 @@ const Chatbot = () => {
     setMessages([]);
     setSessionId(null);
     setIsSidebarOpen(false);
-    toast.success(t("chat.new_chat_started"));
+    // toast.success(t("chat.new_chat_started")); // Removed flash message
   };
 
   // Voice input handler
@@ -651,30 +651,30 @@ const Chatbot = () => {
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = browserLangMap[detectedLang] || 'en-US';
     
-    // Optimized settings for each language
+    // Optimized settings for each language - FASTER SPEEDS
     if (detectedLang === 'or') {
-      // Very slow and clear for Odia
-      utterance.rate = 0.6;
+      // Faster for Odia
+      utterance.rate = 0.85;
       utterance.pitch = 0.95;
       utterance.volume = 1.0;
     } else if (detectedLang === 'hi') {
-      // Slower for Hindi
-      utterance.rate = 0.7;
+      // Faster for Hindi
+      utterance.rate = 0.9;
       utterance.pitch = 0.95;
       utterance.volume = 1.0;
     } else if (detectedLang === 'bn') {
-      // Slower for Bengali
-      utterance.rate = 0.7;
+      // Faster for Bengali
+      utterance.rate = 0.9;
       utterance.pitch = 0.95;
       utterance.volume = 1.0;
     } else if (detectedLang === 'ta' || detectedLang === 'te') {
       // Tamil and Telugu
-      utterance.rate = 0.75;
+      utterance.rate = 0.95;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
     } else {
-      // English
-      utterance.rate = 0.9;
+      // English - Normal speed
+      utterance.rate = 1.0;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
     }
@@ -711,15 +711,15 @@ const Chatbot = () => {
         utterance.voice = selectedVoice;
         console.log(`🔊 Selected voice: ${selectedVoice.name} (${selectedVoice.lang})`);
         console.log(`   Settings: rate=${utterance.rate}, pitch=${utterance.pitch}`);
-        toast.success(`🔊 ${langNames[detectedLang]} - ${selectedVoice.name}`, {
-          duration: 2000,
-        });
+        // toast.success(`🔊 ${langNames[detectedLang]} - ${selectedVoice.name}`, {
+        //   duration: 2000,
+        // }); // Removed flash message
       } else {
         console.warn(`⚠️ No ${detectedLang} voice found. Available voices:`);
         voices.forEach(v => console.log(`   - ${v.name} (${v.lang})`));
-        toast.warning(`No ${langNames[detectedLang]} voice installed. Using default voice.`, {
-          duration: 3000,
-        });
+        // toast.warning(`No ${langNames[detectedLang]} voice installed. Using default voice.`, {
+        //   duration: 3000,
+        // }); // Removed flash message
       }
     };
 
@@ -989,10 +989,10 @@ const Chatbot = () => {
                   </p>
                   <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
                     {[
-                      "kemiti achha? (ଓଡ଼ିଆରେ କଥା ହେବ)",
-                      "Data structures kn?", 
-                      "Python କିପରି ଶିଖିବି?",
-                      "Explain linked list in English"
+                      "Explain Python classes",
+                      "Help with calculus", 
+                      "Data structures tutorial",
+                      "Study tips for exams"
                     ].map((suggestion) => (
                               <button
                                 key={suggestion}
