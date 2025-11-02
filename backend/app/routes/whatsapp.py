@@ -2,7 +2,7 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import Response
 from twilio.twiml.messaging_response import MessagingResponse
 from typing import Dict, List
-from app.utils.ai_client import generate_response
+from app.utils.ai_client import ai_client
 
 router = APIRouter(prefix="/whatsapp", tags=["whatsapp"])
 
@@ -39,8 +39,8 @@ async def webhook(
         # Get response using the existing AI client
         system_prompt = "You are Edusaathi (ଏଡୁସାଥୀ), a helpful WhatsApp educational assistant. Keep responses concise, friendly, and educational. You can speak in Odia, Hindi, or English based on the user's language."
         
-        bot_message = generate_response(
-            message=incoming_msg,
+        bot_message = ai_client.generate_response(
+            user_message=incoming_msg,
             conversation_history=conversations[from_number][:-1],  # Exclude current message
             system_prompt=system_prompt
         )

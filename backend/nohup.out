@@ -1,0 +1,55 @@
+Traceback (most recent call last):
+  File "/home/tecosys/LearnSync/backend/main.py", line 6, in <module>
+    from app.routes import auth, users, courses, assessments, analytics, gamification, chatbot, communication, voice, youtube, tts, whatsapp
+  File "/home/tecosys/LearnSync/backend/app/routes/tts.py", line 4, in <module>
+    from gtts import gTTS
+ModuleNotFoundError: No module named 'gtts'
+Traceback (most recent call last):
+  File "/home/tecosys/LearnSync/backend/main.py", line 6, in <module>
+    from app.routes import auth, users, courses, assessments, analytics, gamification, chatbot, communication, voice, youtube, tts, whatsapp
+  File "/home/tecosys/LearnSync/backend/app/routes/tts.py", line 4, in <module>
+    from gtts import gTTS
+ModuleNotFoundError: No module named 'gtts'
+Traceback (most recent call last):
+  File "/home/tecosys/LearnSync/backend/main.py", line 6, in <module>
+    from app.routes import auth, users, courses, assessments, analytics, gamification, chatbot, communication, voice, youtube, tts, whatsapp
+  File "/home/tecosys/LearnSync/backend/app/routes/whatsapp.py", line 5, in <module>
+    from app.utils.ai_client import generate_response
+ImportError: cannot import name 'generate_response' from 'app.utils.ai_client' (/home/tecosys/LearnSync/backend/app/utils/ai_client.py)
+INFO:     Will watch for changes in these directories: ['/home/tecosys/LearnSync/backend']
+INFO:     Uvicorn running on http://0.0.0.0:6765 (Press CTRL+C to quit)
+INFO:     Started reloader process [1905609] using WatchFiles
+INFO:     Started server process [1905671]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+🚀 LearnSync v1.0.0 started!
+INFO:     106.222.185.25:0 - "OPTIONS /api/auth/login HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "POST /api/auth/login HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "GET /api/auth/me HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "OPTIONS /api/courses/?skip=0&limit=6 HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "GET /api/courses/?skip=0&limit=6 HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "OPTIONS /api/courses/enrolled/my-courses?skip=0&limit=10 HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "OPTIONS /api/auth/recommendations HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "GET /api/courses/enrolled/my-courses?skip=0&limit=10 HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "GET /api/auth/recommendations HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "OPTIONS /api/chatbot/sessions/student/6905b2e1676e7a8cc014b28f HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "GET /api/chatbot/sessions/student/6905b2e1676e7a8cc014b28f HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "OPTIONS /api/chatbot/ask/stream HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "POST /api/chatbot/ask/stream HTTP/1.0" 200 OK
+🔄 Starting stream for student: 6905b2e1676e7a8cc014b28f
+📜 Context loaded: 1 messages
+✅ Stream complete: 27 chunks, 2614 characters
+💾 Conversation saved to session: 270217a6-66c4-4fa2-9ab2-a2c30fa24d01
+INFO:     106.222.185.25:0 - "GET /api/chatbot/sessions/student/6905b2e1676e7a8cc014b28f HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "OPTIONS /api/chatbot/sessions/270217a6-66c4-4fa2-9ab2-a2c30fa24d01 HTTP/1.0" 200 OK
+INFO:     106.222.185.25:0 - "DELETE /api/chatbot/sessions/270217a6-66c4-4fa2-9ab2-a2c30fa24d01 HTTP/1.0" 200 OK
+WARNING:  WatchFiles detected changes in 'app/utils/ai_client.py', 'app/services/chatbot_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1905671]
+INFO:     Started server process [1912026]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+🚀 LearnSync v1.0.0 started!
+INFO:     106.222.185.25:0 - "OPTIONS /api/auth/me HTTP/1.0" 200 OK
