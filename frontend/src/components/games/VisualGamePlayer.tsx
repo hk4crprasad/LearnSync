@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 import WordScrambleGame from "./WordScrambleGame";
 import MatchingPairsGame from "./MatchingPairsGame";
 import MemoryCardsGame from "./MemoryCardsGame";
@@ -15,6 +16,16 @@ interface VisualGamePlayerProps {
 }
 
 const VisualGamePlayer = ({ game, onClose, onComplete }: VisualGamePlayerProps) => {
+  console.log("VisualGamePlayer component rendered with game:", game);
+  
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+  
   const handleComplete = (score: number, maxScore: number) => {
     if (onComplete) {
       onComplete(score, maxScore);
@@ -87,7 +98,8 @@ const VisualGamePlayer = ({ game, onClose, onComplete }: VisualGamePlayerProps) 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm overflow-y-auto"
+        className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm overflow-y-auto"
+        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
       >
         <div className="min-h-screen p-4 md:p-8">
           {/* Close Button */}

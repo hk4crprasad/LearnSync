@@ -76,7 +76,9 @@ const PersonalizedDashboard = () => {
   };
 
   const handlePlayVisualGame = (game: VisualGameTemplate) => {
+    console.log("handlePlayVisualGame called with:", game);
     setActiveVisualGame(game);
+    console.log("activeVisualGame set to:", game.title);
   };
 
   const handleVisualGameComplete = (score: number, maxScore: number) => {
@@ -308,8 +310,8 @@ const PersonalizedDashboard = () => {
                     transition={{ delay: index * 0.1 }}
                   >
                     <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer border-2 hover:border-primary/50">
-                      <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
-                      <CardHeader>
+                      <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none`} />
+                      <CardHeader className="relative z-10">
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-3">
                             <div className="text-4xl">{game.emoji}</div>
@@ -325,7 +327,7 @@ const PersonalizedDashboard = () => {
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="relative z-10">
                         <p className="text-sm text-muted-foreground mb-4">{game.description}</p>
                         <div className="flex items-center justify-between text-sm mb-3">
                           <span className="flex items-center gap-1">
@@ -390,11 +392,14 @@ const PersonalizedDashboard = () => {
 
       {/* Visual Game Player Modal */}
       {activeVisualGame && (
-        <VisualGamePlayer
-          game={activeVisualGame}
-          onClose={() => setActiveVisualGame(null)}
-          onComplete={handleVisualGameComplete}
-        />
+        <>
+          {console.log("Rendering VisualGamePlayer with:", activeVisualGame)}
+          <VisualGamePlayer
+            game={activeVisualGame}
+            onClose={() => setActiveVisualGame(null)}
+            onComplete={handleVisualGameComplete}
+          />
+        </>
       )}
     </div>
   );
