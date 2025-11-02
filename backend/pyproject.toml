@@ -11,6 +11,7 @@ dependencies = [
     "fastapi>=0.120.4",
     "firecrawl>=4.5.0",
     "google-api-python-client>=2.186.0",
+    "gtts>=2.5.4",
     "jwt>=1.4.0",
     "motor>=3.7.1",
     "openai>=2.6.1",
