@@ -27,7 +27,11 @@ import {
   Zap,
   Star,
   Heart,
-  Smile
+  Smile,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -100,7 +104,7 @@ interface ChatSessionSummary {
 
 const Chatbot = () => {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -110,6 +114,15 @@ const Chatbot = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasProcessedInitialQuery = useRef(false);
+
+  // Voice input state
+  const [isRecording, setIsRecording] = useState(false);
+  const [recognition, setRecognition] = useState<any>(null);
+  
+  // Text-to-speech state
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentSpeakingIndex, setCurrentSpeakingIndex] = useState<number | null>(null);
+  const [currentWordIndex, setCurrentWordIndex] = useState<number>(-1);
 
   // Learning Path state
   const [learningPathLevel, setLearningPathLevel] = useState("Beginner");
@@ -128,6 +141,91 @@ const Chatbot = () => {
   const [explainConcept, setExplainConcept] = useState("");
   const [explainLevel, setExplainLevel] = useState("medium");
   const [explainResult, setExplainResult] = useState("");
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      
+      if (SpeechRecognition) {
+        try {
+          const recognitionInstance = new SpeechRecognition();
+          recognitionInstance.continuous = false;
+          recognitionInstance.interimResults = false;
+          recognitionInstance.lang = 'en-US';
+          recognitionInstance.maxAlternatives = 1;
+
+          recognitionInstance.onstart = () => {
+            console.log('Speech recognition started');
+            setIsRecording(true);
+          };
+
+          recognitionInstance.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript;
+            console.log('Voice captured:', transcript);
+            setInput(transcript);
+            toast.success("✅ Voice captured: " + transcript.substring(0, 30) + (transcript.length > 30 ? '...' : ''));
+          };
+
+          recognitionInstance.onerror = (event: any) => {
+            console.error('Speech recognition error:', event.error);
+            setIsRecording(false);
+            
+            if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+              toast.error("🎤 Microphone access denied. Please enable microphone permissions.");
+            } else if (event.error === 'no-speech') {
+              toast.error("No speech detected. Please try again.");
+            } else if (event.error === 'network') {
+              toast.error("Network error. Please check your connection.");
+            } else {
+              toast.error("Voice input failed: " + event.error);
+            }
+          };
+
+          recognitionInstance.onend = () => {
+            console.log('Speech recognition ended');
+            setIsRecording(false);
+          };
+
+          setRecognition(recognitionInstance);
+          console.log('Speech recognition initialized successfully');
+        } catch (error) {
+          console.error('Failed to initialize speech recognition:', error);
+        }
+      } else {
+        console.warn('Speech recognition not supported in this browser');
+      }
+    }
+
+    // Load available voices for TTS
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      const loadVoices = () => {
+        const voices = window.speechSynthesis.getVoices();
+        console.log('🔊 Available TTS voices:', voices.length);
+        console.log('📋 Voice list:', voices.map(v => `${v.name} (${v.lang})`));
+        
+        // Check for Indian language voices
+        const indianVoices = voices.filter(v => v.lang.includes('-IN'));
+        console.log(`🇮🇳 Indian language voices found: ${indianVoices.length}`);
+        indianVoices.forEach(v => console.log(`  - ${v.name} (${v.lang})`));
+        
+        if (voices.length === 0) {
+          console.warn('⚠️ No voices loaded yet. They may load asynchronously.');
+        }
+      };
+
+      // Load voices immediately
+      loadVoices();
+
+      // Some browsers load voices asynchronously
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
+
+      // Retry after a delay for browsers that need it
+      setTimeout(loadVoices, 1000);
+    }
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -251,6 +349,8 @@ const Chatbot = () => {
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let fullResponse = "";
+      let buffer = "";
+      const sentenceDelimiters = /[.!?]\s+|[\n\r]+/;
 
       if (reader) {
         while (true) {
@@ -271,25 +371,57 @@ const Chatbot = () => {
                 }
                 
                 if (data.chunk !== undefined) {
+                  buffer += data.chunk;
                   fullResponse += data.chunk;
                   
-                  // Update the streaming message
-                  setMessages(prev => {
-                    const newMessages = [...prev];
-                    const lastMsg = newMessages[newMessages.length - 1];
-                    if (lastMsg && lastMsg.role === "assistant") {
-                      lastMsg.content = fullResponse || "...";
-                      lastMsg.isStreaming = !data.done;
-                    }
-                    return newMessages;
-                  });
+                  // Check if we have complete sentences/lines to display
+                  const parts = buffer.split(sentenceDelimiters);
+                  
+                  // If we have complete sentences (more than one part), display them
+                  if (parts.length > 1) {
+                    // Keep the last incomplete part in buffer
+                    const incompletePart = parts.pop() || "";
+                    const completeText = parts.join(". ") + (parts.length > 0 ? ". " : "");
+                    
+                    // Update the streaming message with complete sentences
+                    setMessages(prev => {
+                      const newMessages = [...prev];
+                      const lastMsg = newMessages[newMessages.length - 1];
+                      if (lastMsg && lastMsg.role === "assistant") {
+                        // Show accumulated complete sentences plus current buffer
+                        const currentComplete = lastMsg.content || "";
+                        lastMsg.content = currentComplete + completeText;
+                        lastMsg.isStreaming = !data.done;
+                      }
+                      return newMessages;
+                    });
+                    
+                    buffer = incompletePart;
+                    
+                    // Small delay for visual effect (line-by-line appearance)
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                  }
                 }
                 
                 if (data.done) {
+                  // Flush any remaining buffer
+                  if (buffer.trim()) {
+                    setMessages(prev => {
+                      const newMessages = [...prev];
+                      const lastMsg = newMessages[newMessages.length - 1];
+                      if (lastMsg && lastMsg.role === "assistant") {
+                        lastMsg.content = fullResponse;
+                        lastMsg.isStreaming = false;
+                      }
+                      return newMessages;
+                    });
+                  }
+                  
                   if (data.session_id) {
                     setSessionId(data.session_id);
                     loadChatSessions();
                   }
+                  
                   // Ensure message is no longer streaming
                   setMessages(prev => {
                     const newMessages = [...prev];
@@ -394,6 +526,286 @@ const Chatbot = () => {
     toast.success(t("chat.new_chat_started"));
   };
 
+  // Voice input handler
+  const toggleVoiceInput = () => {
+    if (!recognition) {
+      toast.error("Voice input not supported in this browser. Please use Chrome, Edge, or Safari.");
+      return;
+    }
+
+    if (isRecording) {
+      try {
+        recognition.stop();
+        setIsRecording(false);
+        toast.info("Voice input stopped");
+      } catch (error) {
+        console.error('Error stopping recognition:', error);
+        setIsRecording(false);
+      }
+    } else {
+      try {
+        // Stop any existing recognition first
+        try {
+          recognition.stop();
+        } catch (e) {
+          // Ignore if nothing to stop
+        }
+        
+        // Add a small delay before starting new recognition
+        setTimeout(() => {
+          try {
+            recognition.start();
+            setIsRecording(true);
+            toast.info("🎤 Listening... Speak now");
+          } catch (error: any) {
+            console.error('Error starting recognition:', error);
+            if (error.message && error.message.includes('already started')) {
+              toast.error("Voice input is already active. Please wait and try again.");
+            } else {
+              toast.error("Could not start voice input. Please check microphone permissions.");
+            }
+            setIsRecording(false);
+          }
+        }, 100);
+      } catch (error) {
+        console.error('Error preparing recognition:', error);
+        toast.error("Could not start voice input");
+        setIsRecording(false);
+      }
+    }
+  };
+
+  // Text-to-speech handler with improved Odia support
+  const speakText = async (text: string, messageIndex: number) => {
+    // Stop any ongoing speech
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setCurrentSpeakingIndex(null);
+      setCurrentWordIndex(-1);
+      return;
+    }
+
+    // Remove markdown formatting for better speech
+    let cleanText = text
+      .replace(/[#*`_~[\]()]/g, '')
+      .replace(/\n+/g, '. ')
+      .trim();
+
+    // Detect language from text content
+    const detectLanguage = (text: string): string => {
+      // Check for Odia script
+      if (/[\u0B00-\u0B7F]/.test(text)) return 'or';
+      // Check for Devanagari script (Hindi)
+      if (/[\u0900-\u097F]/.test(text)) return 'hi';
+      // Check for Tamil script
+      if (/[\u0B80-\u0BFF]/.test(text)) return 'ta';
+      // Check for Telugu script
+      if (/[\u0C00-\u0C7F]/.test(text)) return 'te';
+      // Check for Bengali script
+      if (/[\u0980-\u09FF]/.test(text)) return 'bn';
+      // Default to current UI language or English
+      const langMap: { [key: string]: string } = {
+        'en': 'en',
+        'hi': 'hi',
+        'or': 'or',
+        'ta': 'ta',
+        'te': 'te',
+        'bn': 'bn',
+      };
+      return langMap[i18n.language] || 'en';
+    };
+
+    const detectedLang = detectLanguage(cleanText);
+    
+    // For Odia text, add pauses for better pronunciation
+    if (detectedLang === 'or') {
+      // Add pauses after Odia punctuation marks
+      cleanText = cleanText.replace(/।/g, '। '); // Add space after Odia danda
+      cleanText = cleanText.replace(/\s+/g, '  '); // Double spaces for longer pauses
+    }
+
+    setIsSpeaking(true);
+    setCurrentSpeakingIndex(messageIndex);
+    setCurrentWordIndex(0);
+
+    const langNames: { [key: string]: string } = {
+      'en': 'English',
+      'hi': 'Hindi (हिन्दी)',
+      'or': 'Odia (ଓଡ଼ିଆ)',
+      'ta': 'Tamil (தமிழ்)',
+      'te': 'Telugu (తెలుగు)',
+      'bn': 'Bengali (বাংলা)',
+    };
+
+    // Map to browser language codes
+    const browserLangMap: { [key: string]: string } = {
+      'en': 'en-US',
+      'hi': 'hi-IN',
+      'or': 'or-IN',
+      'ta': 'ta-IN',
+      'te': 'te-IN',
+      'bn': 'bn-IN',
+    };
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = browserLangMap[detectedLang] || 'en-US';
+    
+    // Optimized settings for each language
+    if (detectedLang === 'or') {
+      // Very slow and clear for Odia
+      utterance.rate = 0.6;
+      utterance.pitch = 0.95;
+      utterance.volume = 1.0;
+    } else if (detectedLang === 'hi') {
+      // Slower for Hindi
+      utterance.rate = 0.7;
+      utterance.pitch = 0.95;
+      utterance.volume = 1.0;
+    } else if (detectedLang === 'bn') {
+      // Slower for Bengali
+      utterance.rate = 0.7;
+      utterance.pitch = 0.95;
+      utterance.volume = 1.0;
+    } else if (detectedLang === 'ta' || detectedLang === 'te') {
+      // Tamil and Telugu
+      utterance.rate = 0.75;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+    } else {
+      // English
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+    }
+
+    // Wait for voices to load
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      
+      // Find best voice for the language
+      let selectedVoice = null;
+      
+      // Priority 1: Google voices (best quality)
+      selectedVoice = voices.find(v => 
+        v.lang.startsWith(detectedLang) && 
+        (v.name.toLowerCase().includes('google') || v.name.toLowerCase().includes('india'))
+      );
+      
+      // Priority 2: Any voice matching the language
+      if (!selectedVoice) {
+        selectedVoice = voices.find(v => v.lang === browserLangMap[detectedLang]);
+      }
+      
+      // Priority 3: Any voice with language code prefix
+      if (!selectedVoice) {
+        selectedVoice = voices.find(v => v.lang.startsWith(detectedLang));
+      }
+      
+      // Priority 4: Any Indian language voice
+      if (!selectedVoice && browserLangMap[detectedLang]?.includes('-IN')) {
+        selectedVoice = voices.find(v => v.lang.includes('IN'));
+      }
+      
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        console.log(`🔊 Selected voice: ${selectedVoice.name} (${selectedVoice.lang})`);
+        console.log(`   Settings: rate=${utterance.rate}, pitch=${utterance.pitch}`);
+        toast.success(`🔊 ${langNames[detectedLang]} - ${selectedVoice.name}`, {
+          duration: 2000,
+        });
+      } else {
+        console.warn(`⚠️ No ${detectedLang} voice found. Available voices:`);
+        voices.forEach(v => console.log(`   - ${v.name} (${v.lang})`));
+        toast.warning(`No ${langNames[detectedLang]} voice installed. Using default voice.`, {
+          duration: 3000,
+        });
+      }
+    };
+
+    // Load voices
+    loadVoices();
+    
+    // Reload voices if they change (some browsers load asynchronously)
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    // Split text into words for highlighting
+    const words = cleanText.split(/\s+/);
+    let wordIndex = 0;
+
+    utterance.onstart = () => {
+      console.log(`🎤 Speaking ${detectedLang}: "${cleanText.substring(0, 50)}..."`);
+    };
+
+    // Track word boundaries for highlighting
+    utterance.onboundary = (event) => {
+      if (event.name === 'word' && wordIndex < words.length) {
+        setCurrentWordIndex(wordIndex);
+        wordIndex++;
+      }
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setCurrentSpeakingIndex(null);
+      setCurrentWordIndex(-1);
+      console.log('✅ Speech completed');
+    };
+
+    utterance.onerror = (error) => {
+      setIsSpeaking(false);
+      setCurrentSpeakingIndex(null);
+      setCurrentWordIndex(-1);
+      console.error('❌ Speech error:', error);
+      toast.error(`Speech failed: ${error.error}`);
+    };
+
+    // Small delay to ensure voice is loaded
+    setTimeout(() => {
+      window.speechSynthesis.speak(utterance);
+    }, 100);
+  };
+
+  // Component to render text with word highlighting during speech
+  const HighlightedText = ({ text, messageIndex }: { text: string; messageIndex: number }) => {
+    const isCurrentlySpeaking = isSpeaking && currentSpeakingIndex === messageIndex;
+    
+    if (!isCurrentlySpeaking) {
+      return (
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {text || "..."}
+        </ReactMarkdown>
+      );
+    }
+
+    // Clean text for word matching (remove markdown)
+    const cleanText = text
+      .replace(/[#*`_~[\]()]/g, '')
+      .replace(/\n+/g, ' ')
+      .trim();
+    
+    const words = cleanText.split(/\s+/);
+    
+    return (
+      <div className="space-y-2">
+        {words.map((word, index) => (
+          <span
+            key={index}
+            className={`inline-block mr-1 transition-all duration-200 ${
+              index === currentWordIndex
+                ? 'bg-yellow-300 dark:bg-yellow-600 text-black font-semibold px-1 rounded scale-110'
+                : ''
+            }`}
+          >
+            {word}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   const ChatSidebar = () => (
     <div className="flex flex-col h-full w-full bg-muted/30">
       <div className="p-4 border-b flex-shrink-0">
@@ -417,8 +829,8 @@ const Chatbot = () => {
               <div
                 key={session.session_id}
                 className={cn(
-                  "group relative rounded-lg p-3 cursor-pointer transition-all hover:bg-accent",
-                  sessionId === session.session_id && "bg-accent"
+                  "group relative rounded-lg p-3 cursor-pointer transition-all bg-white hover:shadow-lg",
+                  sessionId === session.session_id && "shadow-md"
                 )}
                 onClick={() => loadChatSession(session.session_id)}
               >
@@ -576,7 +988,12 @@ const Chatbot = () => {
                     {t("chat.hero_description")}
                   </p>
                   <div className="flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
-                    {["Explain Python classes", "Help with calculus", "Data structures tutorial", "Study tips"].map((suggestion) => (
+                    {[
+                      "kemiti achha? (ଓଡ଼ିଆରେ କଥା ହେବ)",
+                      "Data structures kn?", 
+                      "Python କିପରି ଶିଖିବି?",
+                      "Explain linked list in English"
+                    ].map((suggestion) => (
                               <button
                                 key={suggestion}
                                 onClick={() => setInput(suggestion)}
@@ -627,9 +1044,13 @@ const Chatbot = () => {
                                     ? "prose-invert" 
                                     : "dark:prose-invert"
                                 }`}>
-                                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                    {message.content || "..."}
-                                  </ReactMarkdown>
+                                  {message.role === "assistant" && isSpeaking && currentSpeakingIndex === index ? (
+                                    <HighlightedText text={message.content} messageIndex={index} />
+                                  ) : (
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                      {message.content || "..."}
+                                    </ReactMarkdown>
+                                  )}
                                 </div>
                                 
                                 {/* Action Buttons */}
@@ -686,6 +1107,19 @@ const Chatbot = () => {
                                       <RotateCcw className="h-3 w-3 mr-1" />
                                       {t("common.retry")}
                                     </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className={`h-7 px-2 text-xs ${currentSpeakingIndex === index ? 'text-primary' : ''}`}
+                                      onClick={() => speakText(message.content, index)}
+                                    >
+                                      {currentSpeakingIndex === index ? (
+                                        <VolumeX className="h-3 w-3 mr-1" />
+                                      ) : (
+                                        <Volume2 className="h-3 w-3 mr-1" />
+                                      )}
+                                      {currentSpeakingIndex === index ? "Stop" : "Listen"}
+                                    </Button>
                                   </div>
                                 )}
                               </div>
@@ -729,6 +1163,20 @@ const Chatbot = () => {
                             rows={2}
                           />
                           <div className="absolute bottom-3 right-3 flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className={`h-8 w-8 p-0 ${isRecording ? 'text-red-500 animate-pulse' : ''}`}
+                              onClick={toggleVoiceInput}
+                              disabled={isLoading}
+                              title={isRecording ? "Stop recording" : "Voice input"}
+                            >
+                              {isRecording ? (
+                                <MicOff className="h-4 w-4" />
+                              ) : (
+                                <Mic className="h-4 w-4" />
+                              )}
+                            </Button>
                             <Button
                               size="sm"
                               variant="ghost"

@@ -25,6 +25,7 @@ const Dashboard = () => {
   const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendations | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [coursesLoading, setCoursesLoading] = useState(true);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [userQuery, setUserQuery] = useState("");
 
@@ -33,8 +34,10 @@ const Dashboard = () => {
       try {
         // Load critical data first
         setIsLoading(true);
+        setCoursesLoading(true);
         const coursesData = await api.getCourses(0, 6);
         setCourses(coursesData);
+        setCoursesLoading(false);
         setIsLoading(false);
         
         // Load user-specific data in background
@@ -51,6 +54,7 @@ const Dashboard = () => {
         toast.error(t("dashboard.failed_load"));
         console.error(error);
         setIsLoading(false);
+        setCoursesLoading(false);
       }
     };
 
@@ -153,94 +157,86 @@ const Dashboard = () => {
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {/* AI Practice Quick Action */}
-          <Card className="animate-fade-up border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Sparkles className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{t("dashboard.ai_practice")}</h3>
-                    <p className="text-sm text-muted-foreground">{t("dashboard.ai_practice_desc")}</p>
-                  </div>
+          <Card className="animate-fade-up border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5 flex flex-col h-full">
+            <CardContent className="pt-6 flex flex-col flex-grow">
+              <div className="flex items-start gap-3 mb-4 flex-grow">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="h-6 w-6 text-primary" />
                 </div>
-                <Link to="/practice">
-                  <Button className="gap-2">
-                    <Sparkles className="h-4 w-4" />
-                    {t("dashboard.start_practice")}
-                  </Button>
-                </Link>
+                <div className="flex-grow">
+                  <h3 className="font-semibold text-lg mb-1">{t("dashboard.ai_practice")}</h3>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.ai_practice_desc")}</p>
+                </div>
               </div>
+              <Link to="/practice" className="w-full mt-auto">
+                <Button className="w-full gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  {t("dashboard.start_practice")}
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
           {/* Adaptive Learning Quick Action */}
-          <Card className="animate-fade-up border-2 border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-purple-500/5">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{t("dashboard.adaptive_learning")}</h3>
-                    <p className="text-sm text-muted-foreground">{t("dashboard.adaptive_learning_desc")}</p>
-                  </div>
+          <Card className="animate-fade-up border-2 border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-purple-500/5 flex flex-col h-full">
+            <CardContent className="pt-6 flex flex-col flex-grow">
+              <div className="flex items-start gap-3 mb-4 flex-grow">
+                <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="h-6 w-6 text-blue-600" />
                 </div>
-                <Link to="/adaptive-learning">
-                  <Button variant="outline" className="gap-2 border-blue-500/50">
-                    <TrendingUp className="h-4 w-4" />
-                    {t("dashboard.view_plan")}
-                  </Button>
-                </Link>
+                <div className="flex-grow">
+                  <h3 className="font-semibold text-lg mb-1">{t("dashboard.adaptive_learning")}</h3>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.adaptive_learning_desc")}</p>
+                </div>
               </div>
+              <Link to="/adaptive-learning" className="w-full mt-auto">
+                <Button variant="outline" className="w-full gap-2 border-blue-500/50">
+                  <TrendingUp className="h-4 w-4" />
+                  {t("dashboard.view_plan")}
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
           {/* Scholarships Quick Action */}
-          <Card className="animate-fade-up border-2 border-green-500/20 bg-gradient-to-br from-green-500/5 to-emerald-500/5">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <Award className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{t("dashboard.scholarships")}</h3>
-                    <p className="text-sm text-muted-foreground">{t("dashboard.scholarships_desc")}</p>
-                  </div>
+          <Card className="animate-fade-up border-2 border-green-500/20 bg-gradient-to-br from-green-500/5 to-emerald-500/5 flex flex-col h-full">
+            <CardContent className="pt-6 flex flex-col flex-grow">
+              <div className="flex items-start gap-3 mb-4 flex-grow">
+                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                  <Award className="h-6 w-6 text-green-600" />
                 </div>
-                <Link to="/scholarships">
-                  <Button variant="outline" className="gap-2 border-green-500/50">
-                    <Award className="h-4 w-4" />
-                    {t("dashboard.explore")}
-                  </Button>
-                </Link>
+                <div className="flex-grow">
+                  <h3 className="font-semibold text-lg mb-1">{t("dashboard.scholarships")}</h3>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.scholarships_desc")}</p>
+                </div>
               </div>
+              <Link to="/scholarships" className="w-full mt-auto">
+                <Button variant="outline" className="w-full gap-2 border-green-500/50">
+                  <Award className="h-4 w-4" />
+                  {t("dashboard.explore")}
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
           {/* Video Courses Quick Action */}
-          <Card className="animate-fade-up border-2 border-red-500/20 bg-gradient-to-br from-red-500/5 to-pink-500/5">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
-                    <Youtube className="h-6 w-6 text-red-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">{t("dashboard.youtube_courses")}</h3>
-                    <p className="text-sm text-muted-foreground">{t("dashboard.youtube_courses_desc")}</p>
-                  </div>
+          <Card className="animate-fade-up border-2 border-red-500/20 bg-gradient-to-br from-red-500/5 to-pink-500/5 flex flex-col h-full">
+            <CardContent className="pt-6 flex flex-col flex-grow">
+              <div className="flex items-start gap-3 mb-4 flex-grow">
+                <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                  <Youtube className="h-6 w-6 text-red-600" />
                 </div>
-                <Link to="/youtube-courses">
-                  <Button variant="outline" className="gap-2 border-red-500/50">
-                    <Youtube className="h-4 w-4" />
-                    {t("dashboard.discover")}
-                  </Button>
-                </Link>
+                <div className="flex-grow">
+                  <h3 className="font-semibold text-lg mb-1">{t("dashboard.youtube_courses")}</h3>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.youtube_courses_desc")}</p>
+                </div>
               </div>
+              <Link to="/youtube-courses" className="w-full mt-auto">
+                <Button variant="outline" className="w-full gap-2 border-red-500/50">
+                  <Youtube className="h-4 w-4" />
+                  {t("dashboard.discover")}
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
@@ -369,47 +365,58 @@ const Dashboard = () => {
             </Button>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course, index) => (
-              <Card
-                key={course.id}
-                className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-fade-up group cursor-pointer"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between mb-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {course.difficulty_level}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {course.category}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                    {course.title}
-                  </CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    {course.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{course.topics?.length || 0} {t("dashboard.topics")}</span>
-                      <span>
-                        {course.topics?.reduce((acc, t) => acc + t.estimated_duration, 0) || 0} {t("dashboard.min")}
-                      </span>
+          {coursesLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : courses.length === 0 ? (
+            <Card className="p-8 text-center">
+              <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">{t("dashboard.no_enrolled_courses_desc")}</p>
+            </Card>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {courses.map((course, index) => (
+                <Card
+                  key={course.id}
+                  className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-fade-up group cursor-pointer"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between mb-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {course.difficulty_level}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {course.category}
+                      </Badge>
                     </div>
-                    <Button className="w-full" asChild>
-                      <Link to={`/courses/${course.id}`}>
-                        {t("dashboard.start_learning")}
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                      {course.title}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2">
+                      {course.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <span>{course.topics?.length || 0} {t("dashboard.topics")}</span>
+                        <span>
+                          {course.topics?.reduce((acc, t) => acc + t.estimated_duration, 0) || 0} {t("dashboard.min")}
+                        </span>
+                      </div>
+                      <Button className="w-full" asChild>
+                        <Link to={`/courses/${course.id}`}>
+                          {t("dashboard.start_learning")}
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

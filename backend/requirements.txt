@@ -4,6 +4,7 @@ email-validator
 fastapi
 firecrawl
 google-api-python-client
+gTTS
 jwt
 motor
 openai
