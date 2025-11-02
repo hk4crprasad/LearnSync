@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.utils.database import db
-from app.routes import auth, users, courses, assessments, analytics, gamification, chatbot, communication, voice, youtube, tts
+from app.routes import auth, users, courses, assessments, analytics, gamification, chatbot, communication, voice, youtube, tts, whatsapp
 from config import settings
 
 
@@ -53,6 +53,7 @@ app.include_router(communication.router)
 app.include_router(voice.router)  # Voice assistant - no auth required
 app.include_router(youtube.router)  # YouTube integration
 app.include_router(tts.router)  # Text-to-Speech with Indian languages
+app.include_router(whatsapp.router)  # WhatsApp chatbot integration
 
 
 @app.get("/")
