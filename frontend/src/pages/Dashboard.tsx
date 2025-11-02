@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { api, Course, Recommendations } from "@/lib/api";
-import { BookOpen, TrendingUp, Award, Sparkles, Loader2, ArrowRight, Youtube, Send } from "lucide-react";
+import { BookOpen, TrendingUp, Award, Sparkles, Loader2, ArrowRight, Youtube, Send, Phone } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -240,6 +240,36 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* AI Phone Assistance Card */}
+        <Card className="mb-6 animate-fade-up border-2 border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-indigo-500/5">
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                <Phone className="h-8 w-8 text-purple-600" />
+              </div>
+              <div className="flex-grow text-center md:text-left">
+                <h3 className="font-bold text-xl mb-2 text-slate-800 dark:text-slate-100">
+                  Call AI Assistance
+                </h3>
+                <p className="text-sm text-muted-foreground italic mb-3">
+                  "No Wi-Fi? No Problem. Your AI Tutor Is Just a Signal Away."
+                </p>
+                <div className="flex flex-col sm:flex-row items-center gap-3 justify-center md:justify-start">
+                  <a href="tel:+12298606824" className="w-full sm:w-auto">
+                    <Button className="w-full gap-2 bg-purple-600 hover:bg-purple-700">
+                      <Phone className="h-4 w-4" />
+                      Call Now: +1 229-860-6824
+                    </Button>
+                  </a>
+                  <Badge variant="outline" className="text-xs border-purple-500/50 text-purple-700 dark:text-purple-300">
+                    Toll-Free 24/7
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
